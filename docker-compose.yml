@@ -1,0 +1,12 @@
+version: '3.8'
+
+services:
+  postigis:
+    image: postgis/postgis:13-3.1-alpine
+    container_name: meu_postgis
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123456
+      POSTGRES_DB: bd_tcc_hml
