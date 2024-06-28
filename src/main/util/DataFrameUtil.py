@@ -3,7 +3,9 @@ from util.ExceptionUtil import ExceptionUtil
 from util.LoggerUtil import LoggerUtil
 
 from geopandas import GeoDataFrame, read_file
-from pandas import DataFrame
+from pandas import DataFrame, Series
+
+import dask.dataframe as dd
 
 log = LoggerUtil.recuperar_logger()
 class DataFrameUtil:
@@ -34,4 +36,13 @@ class DataFrameUtil:
             return gdf.to_crs(crs)
         except Exception as e:
             log.error(msg=f"Houve um erro ao alterar o CRS do GeoDataFrame de {gdf.crs.__name__} para {crs}. {ExceptionUtil.montar_exception_padrao(e)}")
+            raise e
+    
+    @staticmethod
+    def processar_dataframe_dask(df: DataFrame | GeoDataFrame, funcao: any, meta: DataFrame | Series, qtde_particoes: int = ParametrosConstantes.QTDE_PARTICOES_DASK) -> DataFrame | Series:
+        try:
+            dask_dataframe = dd.from_pandas(data=df, npartitions=qtde_particoes)
+            return dask_dataframe.map_partitions(func=funcao, meta=meta).compute()
+        except Exception as e:
+            log.error(msg=f"Houve um erro ao processar o {type(df).__name__} com o Dask. {ExceptionUtil.montar_exception_padrao(e)}")
             raise e

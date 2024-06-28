@@ -1,6 +1,6 @@
 from enum import Enum
 
-class StatusProcessamentoEnum(Enum):
+class StatusEtapaProcessamentoEnum(Enum):
 
     CONCLUIDO = "C"
     ERRO = "E"

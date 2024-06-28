@@ -13,7 +13,8 @@ class ParametrosConstantes:
 
     # Parâmetros para caminhos de arquivos
     CAMINHO_APPLICATION_YAML = DIRETORIO_RESOURCE + "/application.yaml"
-    CAMINHO_ARQUIVO_LOG_CARGA_INICIAL = DIRETORIO_LOGS + "/1_carga_inicial.log"
+    CAMINHO_LOG_CARGA_INICIAL = DIRETORIO_LOGS + "/1_carga_inicial.log"
+    CAMINHO_LOG_GERACAO_MALHA_HEXAGONAL = DIRETORIO_LOGS + "/2_geracao_malha_hexagonal.log"
     CAMINHO_SHAPEFILE_UNIDADES_FEDERATIVAS = DIRETORIO_DADOS + "/BR_UF_2022.zip"
     CAMINHO_SHAPEFILE_MUNICIPIOS = DIRETORIO_DADOS + "/BR_Municipios_2022.zip"
 
@@ -28,4 +29,11 @@ class ParametrosConstantes:
     # Parâmetros relacionados à geometrias
     COLUNA_GEOMETRIA_DEFAULT = "geometria"
     CRS_DEFAULT = "EPSG:4326"
+
+    # Parâmetro para a resolução da malha hexagonal
+    RESOLUCAO_MALHA_HEXAGONAL = 7
+
+    # Parâmetros para processamento em batch
+    QTDE_REGISTROS_ETAPA_GERACAO_MALHA = 100
+    QTDE_PARTICOES_DASK = 10
   

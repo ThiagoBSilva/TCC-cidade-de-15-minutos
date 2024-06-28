@@ -1,9 +1,9 @@
-from model.constants.ParametrosConstantes import ParametrosConstantes
 from repository.MunicipioRepository import MunicipioRepository
 from util.ExceptionUtil import ExceptionUtil
 from util.LoggerUtil import LoggerUtil
 
 from geopandas import GeoDataFrame
+from pandas import DataFrame
 from sqlalchemy.engine import Connection
 
 log = LoggerUtil.recuperar_logger()
@@ -13,8 +13,29 @@ class MunicipioService:
 
     def salvar_geodataframe(self, gdf: GeoDataFrame, conexao_bd: Connection) -> None:
         try:
-            self.repository.salvar_geodataframe(gdf.to_crs(crs=ParametrosConstantes.CRS_DEFAULT), conexao_bd)
+            self.repository.salvar_geodataframe(gdf, conexao_bd)
             log.info(msg=f"Dados persistidos com sucesso na tabela {self.repository.ENTIDADE}.")
         except Exception as e:
             log.error(msg=f"Houve um erro ao persistir os dados do GeoDataFrame na tabela {self.repository.ENTIDADE}. {ExceptionUtil.montar_exception_padrao(e)}")
+            raise e
+        
+    def buscar_qtde_municipios_pendentes_geracao_malha_hexagonal(self, conexao_bd: Connection) -> DataFrame:
+        try:
+            return self.repository.buscar_qtde_municipios_pendentes_geracao_malha_hexagonal(conexao_bd)
+        except Exception as e:
+            log.error(msg=f"Houve um erro ao buscar a quantidade de municípios pendentes de geração da malha hexagonal. {ExceptionUtil.montar_exception_padrao(e)}")
+            raise e
+        
+    def buscar_por_flag_geracao_malha_hexagonal(self, conexao_bd: Connection, parametros: dict) -> GeoDataFrame:
+        try:
+            return self.repository.buscar_por_flag_geracao_malha_hexagonal(conexao_bd, parametros)
+        except Exception as e:
+            log.error(msg=f"Houve um erro ao buscar os municípios pela flag de geração da malha hexagonal. {ExceptionUtil.montar_exception_padrao(e)}")
+            raise e
+        
+    def atualizar_flag_geracao_malha_hexagonal(self, conexao_bd: Connection, parametros: dict) -> None:
+        try:
+            self.repository.atualizar_flag_geracao_malha_hexagonal(conexao_bd, parametros)
+        except Exception as e:
+            log.error(msg=f"Houve um erro ao atualizar a flag de geração da malha hexagonal com os parâmetros {parametros}. {ExceptionUtil.montar_exception_padrao(e)}")
             raise e
