@@ -5,6 +5,7 @@ from service.HistoricoErroService import HistoricoErroService
 from service.MalhaHexagonalMunicipioService import MalhaHexagonalMunicipioService
 from service.MunicipioService import MunicipioService
 from service.client.H3ClientService import H3ClientService
+from util.DataFrameUtil import DataFrameUtil
 from util.ExceptionUtil import ExceptionUtil
 from util.LoggerUtil import LoggerUtil
 
@@ -21,13 +22,13 @@ class GeracaoMalhaHexagonalComponent:
     malha_hexagonal_service = MalhaHexagonalMunicipioService()
     municipio_service = MunicipioService()
 
-    def verificar_existencia_registros_pendentes(self, conexao_bd: Connection) -> bool:
-        df_qtde_municipios_pendentes = self.municipio_service.buscar_qtde_municipios_pendentes_geracao_malha_hexagonal(conexao_bd)
-        qtde_municipios_pendentes = df_qtde_municipios_pendentes["quantidade"][0]
+    def verificar_nao_existencia_registros_pendentes(self, conexao_bd: Connection) -> bool:
+        df_qtde_registros_pendentes = self.municipio_service.buscar_qtde_registros_pendentes_geracao_malha_hexagonal(conexao_bd)
+        qtde_registros_pendentes = df_qtde_registros_pendentes["quantidade"][0]
 
-        log.info(msg=f"Há um total de {qtde_municipios_pendentes} municípios a serem processados.")
+        log.info(msg=f"Há um total de {qtde_registros_pendentes} municípios a serem processados.")
 
-        return qtde_municipios_pendentes == 0
+        return qtde_registros_pendentes == 0
     
     def __gerar_malha_hexagonal_municipio(self, sr_municipio: Series) -> tuple[DataFrame, DataFrame]:
         codigo_municipio = sr_municipio["codigo"]
@@ -37,10 +38,15 @@ class GeracaoMalhaHexagonalComponent:
         df_historico_erro = DataFrame(data=[], columns=["entidade_erro", "chave_entidade", "etapa_erro", "mensagem_erro", "data_hora_ocorrencia"])
 
         try:
+            log.info(msg=f"Gerando a malha do município {codigo_municipio} - {nome_municipio}.")
+            
             hexagonos_h3 = list()
 
             for poligono in list(sr_municipio["geometria"].geoms):
                 hexagonos_h3 = hexagonos_h3 + list(self.h3_client_service.obter_hexagonos_h3_por_poligono(poligono))
+
+            if not hexagonos_h3:
+                raise Exception("Não foi possível obter a malha hexagonal do município, nenhum hexágono encontrado para o polígono e resolução informados")
 
             for hex_h3 in hexagonos_h3:
                 geometria = self.h3_client_service.obter_poligono_hexagono_h3(hexagono_h3=hex_h3)
@@ -86,15 +92,11 @@ class GeracaoMalhaHexagonalComponent:
         try:
             for indice, sr_resultado in df_resultado.iterrows():
                 if sr_resultado["dict_malha_hexagonal"] != {}:
-                    gdf_malha_hexagonal_municipio = GeoDataFrame.from_dict(
-                        data=sr_resultado["dict_malha_hexagonal"], 
-                        geometry=ParametrosConstantes.COLUNA_GEOMETRIA_DEFAULT, 
-                        crs=ParametrosConstantes.CRS_DEFAULT
-                    )
+                    gdf_malha_hexagonal_municipio = DataFrameUtil.dict_para_geodataframe(dict_dados=sr_resultado["dict_malha_hexagonal"])
                     self.malha_hexagonal_service.salvar_geodataframe(gdf=gdf_malha_hexagonal_municipio, conexao_bd=conexao_bd)
 
                 if sr_resultado["dict_historico_erro"] != {}:
-                    df_historico_erro = DataFrame.from_dict(data=sr_resultado["dict_historico_erro"])
+                    df_historico_erro = DataFrameUtil.dict_para_dataframe(dict_dados=sr_resultado["dict_historico_erro"])
                     self.historico_erro_service.salvar_dataframe(df=df_historico_erro, conexao_bd=conexao_bd)
 
                 parametros = {

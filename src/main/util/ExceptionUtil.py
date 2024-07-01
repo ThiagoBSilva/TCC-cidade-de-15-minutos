@@ -8,4 +8,4 @@ class ExceptionUtil:
     
     @staticmethod
     def montar_exception_historico_erro(exception: type[Exception]) -> str:
-        return f"{type(exception).__name__}: {exception}. {format_exc()}."
+        return f"{format_exc()}"

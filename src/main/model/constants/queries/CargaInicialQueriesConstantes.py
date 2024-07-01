@@ -40,6 +40,7 @@ class CargaInicialQueriesConstantes:
             codigo SMALLINT NOT NULL GENERATED ALWAYS AS IDENTITY,
             tag_osm VARCHAR(40) NOT NULL,
             descricao TEXT NOT NULL,
+            flag_tag_ativa BOOLEAN NOT NULL DEFAULT FALSE,
             codigo_categoria_amenidade SMALLINT NOT NULL
         );
         ALTER TABLE t_feicao_osm
@@ -154,8 +155,8 @@ class CargaInicialQueriesConstantes:
     POPULAR_TABELAS_INICIAIS = '''
         INSERT INTO t_categoria_amenidade (nome) VALUES
         ('Alimentação'),
-        ('Compras e serviços'),
-        ('Cultura, esportes e lazer'),
+        ('Compras e Serviços'),
+        ('Cultura, Esportes e Lazer'),
         ('Educação'),
         ('Saúde'),
         ('Trabalho'),
@@ -214,7 +215,7 @@ class CargaInicialQueriesConstantes:
         ('amenity=cafe', 'Café ou lanchonete', 'Estabelecimentos de consumo de alimentos e bebidas'),
         ('amenity=fast_food', 'Restaurante de fast food', 'Estabelecimentos de consumo de alimentos e bebidas'),
         ('amenity=food_court', 'Praça de alimentação', 'Estabelecimentos de consumo de alimentos e bebidas'),
-        ('amenity=pub', 'Bar', 'Estabelecimentos de consumo de alimentos e bebidas'),
+        ('amenity=pub', 'Bar (Pub)', 'Estabelecimentos de consumo de alimentos e bebidas'),
         ('amenity=restaurant', 'Restaurante', 'Estabelecimentos de consumo de alimentos e bebidas'),
         ('shop=alcohol', 'Loja de bebidas alcoólicas', 'Lojas de alimentos e bebidas'),
         ('shop=bakery', 'Padaria', 'Lojas de alimentos e bebidas'),
@@ -232,11 +233,11 @@ class CargaInicialQueriesConstantes:
         ('amenity=bank', 'Banco', 'Serviços financeiros e administrativos'),
         ('amenity=money_transfer', 'Serviço de transferência de dinheiro', 'Serviços financeiros e administrativos'),
         ('amenity=courthouse', 'Tribunal', 'Serviços financeiros e administrativos'),
-        ('amenity=fire_station', 'Estação de bombeiros', 'Serviços financeiros e administrativos'),
-        ('amenity=police', 'Delegacia de polícia', 'Serviços financeiros e administrativos'),
+        ('amenity=fire_station', 'Estação de bombeiros', 'Serviços públicos'),
+        ('amenity=police', 'Delegacia de polícia', 'Serviços públicos'),
         ('amenity=post_box', 'Caixa de correio', 'Serviços financeiros e administrativos'),
         ('amenity=post_depot', 'Depósito de correios', 'Serviços financeiros e administrativos'),
-        ('amenity=post_office', 'Agência dos correios', 'Serviços financeiros e administrativos'),
+        ('amenity=post_office', 'Agência dos correios', 'Serviços públicos'),
         ('amenity=townhall', 'Prefeitura', 'Serviços financeiros e administrativos'),
         ('amenity=internet_cafe', 'Café com acesso à internet', 'Compras e serviços gerais'),
         ('amenity=marketplace', 'Mercado público', 'Compras e serviços gerais'),
@@ -268,7 +269,7 @@ class CargaInicialQueriesConstantes:
         ('amenity=theatre', 'Teatro', 'Centros culturais e locais de eventos'),
         ('amenity=place_of_worship', 'Local de culto', 'Centros culturais e locais de eventos'),
         ('leisure=dance', 'Local de dança', 'Instalações de lazer e esportes'),
-        ('leisure=fitness_centre', 'Centro de fitness', 'Instalações de lazer e esportes'),
+        ('leisure=fitness_centre', 'Centro de fitness (Academia)', 'Instalações de lazer e esportes'),
         ('leisure=fitness_station', 'Estação de fitness', 'Instalações de lazer e esportes'),
         ('leisure=garden', 'Jardim', 'Instalações de lazer e esportes'),
         ('leisure=nature_reserve', 'Reserva natural', 'Instalações de lazer e esportes'),
@@ -281,7 +282,7 @@ class CargaInicialQueriesConstantes:
         ('leisure=water_park', 'Parque aquático', 'Instalações de lazer e esportes'),
         ('sports=dance', 'Esporte: dança', 'Instalações de lazer e esportes'),
         ('sports=fitness', 'Esporte: fitness', 'Instalações de lazer e esportes'),
-        ('sports=multi', 'Esporte: multiuso', 'Instalações de lazer e esportes'),
+        --('sports=multi', 'Esporte: multiuso', 'Instalações de lazer e esportes'),
         ('leisure=park', 'Parque', 'Instalações de lazer e esportes'),
         ('leisure=pitch', 'Campo de esportes', 'Instalações de lazer e esportes'),
         ('tourism=gallery', 'Galeria de arte', 'Atrações turísticas'),
@@ -301,7 +302,7 @@ class CargaInicialQueriesConstantes:
         ('amenity=pharmacy', 'Farmácia', 'Serviços de saúde e assistência social'),
         ('amenity=social_facility', 'Instalação social', 'Serviços de saúde e assistência social'),
         ('shop=medical_supply', 'Loja de suprimentos médicos', 'Lojas de suprimentos médicos'),
-        ('amenity=optician', 'Óptica', 'Outros serviços de saúde'),
+        ('amenity=optician', 'Oculista', 'Outros serviços de saúde'),
         ('amenity=veterinary', 'Consultório veterinário', 'Outros serviços de saúde'),
         ('building=commercial', 'Edifício comercial', 'Tipos de edifícios e áreas para trabalho'),
         ('building=industrial', 'Edifício industrial', 'Tipos de edifícios e áreas para trabalho'),
@@ -344,6 +345,53 @@ class CargaInicialQueriesConstantes:
         ORDER BY tmp.codigo;
         
         DROP TABLE temp_feicao_osm;
+
+        UPDATE t_feicao_osm
+        SET flag_tag_ativa = TRUE
+        WHERE tag_osm IN (
+            'amenity=bar',
+            'amenity=cafe',
+            'amenity=restaurant',
+            'shop=convenience',
+            'shop=food',
+            'shop=greengrocer',
+            'shop=supermarket',
+            'amenity=bank',
+            'amenity=fire_station',
+            'amenity=police',
+            'amenity=post_office',
+            'amenity=townhall',
+            'shop=department_store',
+            'shop=general',
+            'shop=mall',
+            'shop=wholesale',
+            'shop=variety_store',
+            'amenity=cinema',
+            'amenity=events_venue',
+            'amenity=music_venue',
+            'amenity=theatre',
+            'amenity=place_of_worship',
+            'leisure=fitness_centre',
+            'leisure=playground',
+            'leisure=sports_centre',
+            'leisure=swimming_pool',
+            'leisure=park',
+            'amenity=kindergarten',
+            'amenity=school',
+            'amenity=university',
+            'amenity=clinic',
+            'amenity=hospital',
+            'amenity=pharmacy',
+            'shop=medical_supply',
+            'building=commercial',
+            'building=industrial',
+            'building=office',
+            'building=retail',
+            'highway=bus_stop',
+            'public_transport=station',
+            'railway=station',
+            'railway=subway_entrance'
+        );
 
         INSERT INTO t_modalidade_transporte (nome, descricao, velocidade_media_kph) VALUES
         ('walk', 'Caminhada', 3.6),
