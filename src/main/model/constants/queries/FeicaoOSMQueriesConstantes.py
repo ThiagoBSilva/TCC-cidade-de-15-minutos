@@ -1,6 +1,6 @@
 class FeicaoOSMQueriesConstantes:
 
-    BUSCAR_TAGS_OSM = '''
+    BUSCAR_TAGS_OSM_ATIVAS = '''
         SELECT 
             codigo,
             tag_osm

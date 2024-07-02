@@ -105,6 +105,8 @@ class GeracaoMalhaHexagonalComponent:
                 }
 
                 self.municipio_service.atualizar_flag_geracao_malha_hexagonal(conexao_bd, parametros)
+                log.info(msg="Os dados foram persistidos com sucesso.")
+                
         except Exception as e:
             log.error(msg=f"Houve um erro ao persistir o resultado do processamento na base. {ExceptionUtil.montar_exception_padrao(e)}")
             raise e

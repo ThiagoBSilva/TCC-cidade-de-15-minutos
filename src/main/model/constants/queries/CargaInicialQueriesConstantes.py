@@ -74,7 +74,7 @@ class CargaInicialQueriesConstantes:
             geometria GEOMETRY(MULTIPOLYGON, 4326) NOT NULL,
             flag_geracao_malha_hexagonal CHAR(1) NOT NULL DEFAULT 'P',
             flag_extracao_amenidades CHAR(1) NOT NULL DEFAULT 'P',
-            flag_calculo_acessibilidade CHAR(1) NOT NULL DEFAULT 'P',
+            flag_calculo_matriz_tempo_viagem CHAR(1) NOT NULL DEFAULT 'P',
             codigo_unidade_federativa INT NOT NULL
         );
         ALTER TABLE t_municipio
@@ -85,7 +85,7 @@ class CargaInicialQueriesConstantes:
             ADD CONSTRAINT CCKMUN02
                 CHECK (flag_extracao_amenidades IN ('P', 'C', 'E')),
             ADD CONSTRAINT CCKMUN03
-                CHECK (flag_calculo_acessibilidade IN ('P', 'C', 'E'));
+                CHECK (flag_calculo_matriz_tempo_viagem IN ('P', 'C', 'E'));
 
         CREATE TABLE t_malha_hexagonal_municipio (
             codigo INT NOT NULL GENERATED ALWAYS AS IDENTITY,
@@ -109,7 +109,7 @@ class CargaInicialQueriesConstantes:
             ADD FOREIGN KEY (codigo_municipio) REFERENCES t_municipio (codigo);
 
         CREATE TABLE t_matriz_tempo_viagem (
-            codigo INT NOT NULL GENERATED ALWAYS AS IDENTITY,
+            codigo BIGINT NOT NULL GENERATED ALWAYS AS IDENTITY,
             codigo_hexagono INT NOT NULL,
             codigo_amenidade INT NOT NULL,
             codigo_modalidade_transporte SMALLINT NOT NULL,
@@ -394,6 +394,6 @@ class CargaInicialQueriesConstantes:
         );
 
         INSERT INTO t_modalidade_transporte (nome, descricao, velocidade_media_kph) VALUES
-        ('walk', 'Caminhada', 3.6),
+        ('walk', 'Caminhada', 4.0),
         ('bike', 'Bicicleta', 13.0);
     '''

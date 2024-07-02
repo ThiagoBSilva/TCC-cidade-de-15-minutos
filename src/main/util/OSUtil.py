@@ -3,6 +3,7 @@ from util.LoggerUtil import LoggerUtil
 
 from os import mkdir
 from os.path import isdir, isfile
+from shutil import rmtree
 
 log = LoggerUtil.recuperar_logger()
 class OSUtil:
@@ -22,4 +23,15 @@ class OSUtil:
                 mkdir(path=diretorio)
         except Exception as e:
             log.error(msg=f"Houve um erro ao criar o diretório {diretorio}. {ExceptionUtil.montar_exception_padrao(e)}")
+            raise e
+
+    @staticmethod   
+    def deletar_diretorio(diretorio: str) -> None:
+        try:
+            if OSUtil.verificar_diretorio_existente(diretorio):
+                rmtree(path=diretorio)
+                return 
+            log.warning(msg=f"O diretório informado ({diretorio}) não foi encontrado.")
+        except Exception as e:
+            log.error(msg=f"Houve um erro ao tentar remover o diretório {diretorio}. {ExceptionUtil.montar_exception_padrao(e)}")
             raise e

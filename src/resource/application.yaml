@@ -1,16 +1,24 @@
 application:
-  env: dev
+    env: dev
+  
+nominatim-api:
+    local:
+        enabled: False
+
+overpass-api:
+    local: 
+        enabled: False
 
 database:
-  dev:
-    name: BDTCCDEV
-    username: postgres
-    password: 123456
-    host: localhost
-    port: 5432
-  prd:
-    name: BDTCCPRD
-    username: postgres
-    password: 123456
-    host: localhost
-    port: 5432
+    dev:
+        name: BDTCCDEV
+        username: postgres
+        password: 123456
+        host: localhost
+        port: 5432
+    prd:
+        name: BDTCCPRD
+        username: postgres
+        password: 123456
+        host: localhost
+        port: 5432

@@ -12,5 +12,5 @@ class FeicaoOSMRepository(BaseRepository):
     def __init__(self) -> None:
         super().__init__(schema=self.SCHEMA, entidade=self.ENTIDADE)
 
-    def buscar_tags_osm(self, conexao_bd: Connection) -> DataFrame:
-        return self.buscar_dataframe(sql=FeicaoOSMQueriesConstantes.BUSCAR_TAGS_OSM, conexao_bd=conexao_bd)
+    def buscar_tags_osm_ativas(self, conexao_bd: Connection) -> DataFrame:
+        return self.buscar_dataframe(sql=FeicaoOSMQueriesConstantes.BUSCAR_TAGS_OSM_ATIVAS, conexao_bd=conexao_bd)

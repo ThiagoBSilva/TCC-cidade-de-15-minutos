@@ -46,7 +46,7 @@ class ExtracaoAmenidadesComponent:
             
             for _, sr_tag_osm in df_tags_osm.iterrows():
                 tag_dict = sr_tag_osm["tag_osm"]
-                gdf_feicao_osmnx = self.osmxn_client_service.obter_feicoes_por_poligono_e_tag(poligono=sr_municipio["geometria"], tag=tag_dict)
+                gdf_feicao_osmnx = self.osmxn_client_service.obter_feicoes_por_poligono(poligono=sr_municipio["geometria"], tag=tag_dict)
 
                 if gdf_feicao_osmnx.empty:
                     log.warning(msg=f"Nenhuma amenidade foi encontrada para o município {codigo_municipio} - {nome_municipio} utilizando a tag {tag_dict}.")
@@ -110,6 +110,8 @@ class ExtracaoAmenidadesComponent:
                 }
 
                 self.municipio_service.atualizar_flag_extracao_amenidades(conexao_bd, parametros)
+                log.info(msg="Os dados foram persistidos com sucesso.")
+                
         except Exception as e:
             log.error(msg=f"Houve um erro ao persistir o resultado do processamento na base. {ExceptionUtil.montar_exception_padrao(e)}")
             raise e
