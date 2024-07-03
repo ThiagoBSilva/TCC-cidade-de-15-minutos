@@ -31,6 +31,9 @@ class MunicipioRepository(BaseRepository):
     def buscar_registros_pendentes_calculo_matriz_tempo_viagem(self, conexao_bd: Connection) -> GeoDataFrame:
         return self.buscar_geodataframe(sql=MunicipioQueriesConstantes.BUSCAR_REGISTROS_PENDENTES_CALCULO_MATRIZ_TEMPO_VIAGEM, conexao_bd=conexao_bd)
 
+    def buscar_associacoes_origem_destino_por_codigo(self, conexao_bd: Connection, parametros: dict) -> DataFrame:
+        return self.buscar_dataframe(sql=MunicipioQueriesConstantes.BUSCAR_ASSOCIACOES_ORIGEM_DESTINO_POR_CODIGO, conexao_bd=conexao_bd, parametros=parametros)
+
     def atualizar_flag_geracao_malha_hexagonal(self, conexao_bd: Connection, parametros: dict) -> None:
         self.executar_sql(
             sql=MunicipioQueriesConstantes.ATUALIZAR_FLAG_GERACAO_MALHA_HEXAGONAL, 

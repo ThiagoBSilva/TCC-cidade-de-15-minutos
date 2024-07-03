@@ -9,6 +9,7 @@ from util.ExceptionUtil import ExceptionUtil
 from util.LoggerUtil import LoggerUtil
 
 from datetime import datetime
+from numpy import ndarray, array
 from pandas import DataFrame, Series
 from sqlalchemy.engine import Connection
 
@@ -28,91 +29,104 @@ class ExtracaoAmenidadesComponent:
 
         return qtde_registros_pendentes == 0
     
-    def converter_tags_para_dict(self, tag: str) -> dict:
+
+
+    def __converter_tag_para_dict(self, tag: str) -> str:
         chave = tag[:tag.index("=")]
         valor = tag[tag.index("=") + 1:]
 
         return {chave: valor}
 
-    def __extrair_amenidades_municipio(self, sr_municipio: Series, df_tags_osm: DataFrame) -> tuple[DataFrame, DataFrame]:
-        codigo_municipio = sr_municipio["codigo"]
-        nome_municipio = sr_municipio["nome"]
 
-        df_amenidade_municipio = DataFrame(data=[], columns=["geometria", "codigo_feicao_osm", "codigo_municipio"])
-        df_historico_erro = DataFrame(data=[], columns=["entidade_erro", "chave_entidade", "etapa_erro", "mensagem_erro", "data_hora_ocorrencia"])
+
+    def ajustar_coluna_tag_osm(self, df_tags_osm: DataFrame) -> ndarray:
+        return array(self.__converter_tag_para_dict(tag) for tag in df_tags_osm["tag_osm"].to_numpy())
+
+
+
+    def __extrair_amenidades_municipio(self, municipio: list, df_tags_osm: DataFrame) -> tuple[list[dict], list[dict]]:
+        lista_dict_amenidade_municipio = list()
+        lista_dict_historico_erro = list()
 
         try:
-            log.info(msg=f"Extraindo as amenidades do município {codigo_municipio} - {nome_municipio}.")
+            log.info(msg=f"Extraindo as amenidades do município {municipio[0]} - {municipio[1]}.")
             
-            for _, sr_tag_osm in df_tags_osm.iterrows():
-                tag_dict = sr_tag_osm["tag_osm"]
-                gdf_feicao_osmnx = self.osmxn_client_service.obter_feicoes_por_poligono(poligono=sr_municipio["geometria"], tag=tag_dict)
+            for tag_osm in df_tags_osm.to_numpy():
+                gdf_feicao_osmnx = self.osmxn_client_service.obter_feicoes_por_poligono(poligono=municipio[2], tag=tag_osm[1])
 
                 if gdf_feicao_osmnx.empty:
-                    log.warning(msg=f"Nenhuma amenidade foi encontrada para o município {codigo_municipio} - {nome_municipio} utilizando a tag {tag_dict}.")
+                    log.warning(msg=f"Nenhuma amenidade foi encontrada para o município {municipio[0]} - {municipio[1]} utilizando a tag {tag_osm[1]}.")
                     continue
 
-                for _, sr_feicao in gdf_feicao_osmnx.iterrows():
-                    df_amenidade_municipio.loc[len(df_amenidade_municipio)] = [
-                        sr_feicao["geometry"].centroid,
-                        sr_tag_osm["codigo"],
-                        codigo_municipio
-                    ]
+                for geometria_feicao in gdf_feicao_osmnx["geometry"].to_numpy():
+                    lista_dict_amenidade_municipio.append({
+                        "geometria": geometria_feicao.centroid, 
+                        "codigo_feicao_osm": tag_osm[0], 
+                        "codigo_municipio": municipio[0]
+                    })
 
-            if df_amenidade_municipio.empty:
+            if not lista_dict_amenidade_municipio:
                 raise Exception(f"Nenhuma amenidade foi encontrada para o município")
 
-            log.info(msg=f"As amenidades foram extraídas com sucesso para  o município {codigo_municipio} - {nome_municipio}.")
-            return df_amenidade_municipio, df_historico_erro
+            log.info(msg=f"As amenidades foram extraídas com sucesso para o município {municipio[0]} - {municipio[1]}.")
+
+            return lista_dict_amenidade_municipio, lista_dict_historico_erro
         
         except Exception as e:
-            log.error(msg=f"Houve um erro ao extrair as amenidades do município {codigo_municipio} - {nome_municipio}. {ExceptionUtil.montar_exception_padrao(e)}")
+            log.error(msg=f"Houve um erro ao extrair as amenidades do município {municipio[0]} - {municipio[1]}. {ExceptionUtil.montar_erro_exception_padrao(e)}")
 
-            df_historico_erro.loc[len(df_historico_erro)] = [
-                "t_municipio",
-                codigo_municipio,
-                EtapaProcessamentoEnum.EXTRACAO_AMENIDADES.value,
-                ExceptionUtil.montar_exception_historico_erro(e),
-                datetime.now()
-            ]
+            lista_dict_historico_erro.append({
+                "entidade_erro": "t_municipio", 
+                "chave_entidade": municipio[0], 
+                "etapa_erro": EtapaProcessamentoEnum.EXTRACAO_AMENIDADES.value, 
+                "mensagem_erro": ExceptionUtil.montar_erro_exception_historico_erro(e), 
+                "data_hora_ocorrencia": datetime.now()
+            })
 
-            return DataFrame(), df_historico_erro
-        
+            return list(), lista_dict_historico_erro
+
+
+
     def processar_particao_dask(self, df_municipio: DataFrame, df_tags_osm: DataFrame) -> DataFrame:
-        df_resultado = DataFrame(data=[], columns=["codigo_municipio", "dict_amenidade_municipio", "dict_historico_erro", "status"])
+        lista_dict_resultado = list()
 
-        for _, sr_municipio in df_municipio.iterrows():
-            df_amenidade_municipio, df_historico_erro = self.__extrair_amenidades_municipio(sr_municipio, df_tags_osm)
+        for municipio in df_municipio.to_numpy():
+            lista_dict_amenidade_municipio, lista_dict_historico_erro = self.__extrair_amenidades_municipio(municipio, df_tags_osm)
 
-            df_resultado.loc[len(df_resultado)] = [
-                sr_municipio["codigo"],
-                df_amenidade_municipio.to_dict(),
-                df_historico_erro.to_dict(),
-                StatusEtapaProcessamentoEnum.ERRO.value if df_amenidade_municipio.empty else StatusEtapaProcessamentoEnum.CONCLUIDO.value
-            ]
+            lista_dict_resultado.append({
+                "codigo_municipio": municipio[0], 
+                "lista_dict_amenidade_municipio": lista_dict_amenidade_municipio, 
+                "lista_dict_historico_erro": lista_dict_historico_erro, 
+                "status": StatusEtapaProcessamentoEnum.CONCLUIDO.value if lista_dict_amenidade_municipio else StatusEtapaProcessamentoEnum.ERRO.value
+            })
 
-        return df_resultado.set_index(keys="codigo_municipio")
+        return DataFrame(data=lista_dict_resultado)
     
+
+
     def persistir_resultado(self, df_resultado: DataFrame, conexao_bd: Connection) -> None:
         try:
-            for indice, sr_resultado in df_resultado.iterrows():
-                if sr_resultado["dict_amenidade_municipio"] != {}:
-                    gdf_amenidade_municipio = DataFrameUtil.dict_para_geodataframe(dict_dados=sr_resultado["dict_amenidade_municipio"])
+            log.info(msg="Persistindo os dados processados na base.")
+
+            for resultado in df_resultado.to_numpy():
+                if resultado[1]:
+                    gdf_amenidade_municipio = DataFrameUtil.dict_para_geodataframe(dict_dados=resultado[1])
                     self.amenidade_municipio_service.salvar_geodataframe(gdf=gdf_amenidade_municipio, conexao_bd=conexao_bd)
 
-                if sr_resultado["dict_historico_erro"] != {}:
-                    df_historico_erro = DataFrameUtil.dict_para_dataframe(dict_dados=sr_resultado["dict_historico_erro"])
+                if resultado[2]:
+                    df_historico_erro = DataFrameUtil.dict_para_dataframe(dict_dados=resultado[2])
                     self.historico_erro_service.salvar_dataframe(df=df_historico_erro, conexao_bd=conexao_bd)
 
                 parametros = {
-                    "flag": sr_resultado["status"],
-                    "codigo_municipio": indice
+                    "flag": resultado[3],
+                    "codigo_municipio": resultado[0]
                 }
 
                 self.municipio_service.atualizar_flag_extracao_amenidades(conexao_bd, parametros)
-                log.info(msg="Os dados foram persistidos com sucesso.")
+
+            log.info(msg="Os dados foram persistidos com sucesso.")
                 
         except Exception as e:
-            log.error(msg=f"Houve um erro ao persistir o resultado do processamento na base. {ExceptionUtil.montar_exception_padrao(e)}")
+            log.error(msg=f"Houve um erro ao persistir o resultado do processamento na base. {ExceptionUtil.montar_erro_exception_padrao(e)}")
             raise e
 

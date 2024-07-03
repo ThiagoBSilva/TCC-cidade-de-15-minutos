@@ -3,10 +3,12 @@ application:
   
 nominatim-api:
     local:
+        url: http://localhost:8080/
         enabled: False
 
 overpass-api:
-    local: 
+    local:
+        url: http://localhost:80/api
         enabled: False
 
 database:

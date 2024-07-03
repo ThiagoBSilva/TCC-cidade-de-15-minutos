@@ -30,19 +30,18 @@ class GeracaoMalhaHexagonalComponent:
 
         return qtde_registros_pendentes == 0
     
-    def __gerar_malha_hexagonal_municipio(self, sr_municipio: Series) -> tuple[DataFrame, DataFrame]:
-        codigo_municipio = sr_municipio["codigo"]
-        nome_municipio = sr_municipio["nome"]
 
-        df_malha_hexagonal = DataFrame(data=[], columns=["hexagono_h3", "geometria", "codigo_municipio"])
-        df_historico_erro = DataFrame(data=[], columns=["entidade_erro", "chave_entidade", "etapa_erro", "mensagem_erro", "data_hora_ocorrencia"])
+
+    def __gerar_malha_hexagonal_municipio(self, municipio: list) -> tuple[list[dict], list[dict]]:
+        lista_dict_malha_hexagonal = list()
+        lista_dict_historico_erro = list()
 
         try:
-            log.info(msg=f"Gerando a malha do município {codigo_municipio} - {nome_municipio}.")
+            log.info(msg=f"Gerando a malha do município {municipio[0]} - {municipio[1]}.")
             
             hexagonos_h3 = list()
 
-            for poligono in list(sr_municipio["geometria"].geoms):
+            for poligono in list(municipio[2].geoms):
                 hexagonos_h3 = hexagonos_h3 + list(self.h3_client_service.obter_hexagonos_h3_por_poligono(poligono))
 
             if not hexagonos_h3:
@@ -51,62 +50,69 @@ class GeracaoMalhaHexagonalComponent:
             for hex_h3 in hexagonos_h3:
                 geometria = self.h3_client_service.obter_poligono_hexagono_h3(hexagono_h3=hex_h3)
 
-                df_malha_hexagonal.loc[len(df_malha_hexagonal)] = [
-                    hex_h3,
-                    geometria,
-                    codigo_municipio
-                ]
+                lista_dict_malha_hexagonal.append({
+                    "hexagono_h3": hex_h3,
+                    "geometria": geometria,
+                    "codigo_municipio": municipio[0]
+                })
                 
-            log.info(msg=f"A malha hexagonal para o município {codigo_municipio} - {nome_municipio} foi gerada com sucesso.")
-            return df_malha_hexagonal, df_historico_erro
+            log.info(msg=f"A malha hexagonal para o município {municipio[0]} - {municipio[1]} foi gerada com sucesso.")
+            return lista_dict_malha_hexagonal, lista_dict_historico_erro
 
         except Exception as e:
-            log.error(msg=f"Houve um erro ao gerar a malha hexagonal para o município {codigo_municipio} - {nome_municipio}. {ExceptionUtil.montar_exception_padrao(e)}")
+            log.error(msg=f"Houve um erro ao gerar a malha hexagonal para o município {municipio[0]} - {municipio[1]}. {ExceptionUtil.montar_erro_exception_padrao(e)}")
 
-            df_historico_erro.loc[len(df_historico_erro)] = [
-                "t_municipio",
-                codigo_municipio,
-                EtapaProcessamentoEnum.GERACAO_MALHA_HEXAGONAL.value,
-                ExceptionUtil.montar_exception_historico_erro(e),
-                datetime.now()
-            ]
+            lista_dict_historico_erro.append({
+                "entidade_erro": "t_municipio",
+                "chave_entidade": municipio[0],
+                "etapa_erro": EtapaProcessamentoEnum.GERACAO_MALHA_HEXAGONAL.value,
+                "mensagem_erro": ExceptionUtil.montar_erro_exception_historico_erro(e),
+                "data_hora_ocorrencia": datetime.now()
+            })
 
-            return DataFrame(), df_historico_erro
+            return list(), lista_dict_historico_erro
     
+
+
     def processar_particao_dask(self, df_municipio: DataFrame) -> DataFrame:
-        df_resultado = DataFrame(data=[], columns=["codigo_municipio", "dict_malha_hexagonal", "dict_historico_erro", "status"])
+        lista_dict_resultado = list()
 
-        for _, sr_municipio in df_municipio.iterrows():
-            df_malha_hexagonal, df_historico_erro = self.__gerar_malha_hexagonal_municipio(sr_municipio)
+        for municipio in df_municipio.to_numpy():
+            lista_dict_malha_hexagonal, lista_dict_historico_erro = self.__gerar_malha_hexagonal_municipio(municipio)
 
-            df_resultado.loc[len(df_resultado)] = [
-                sr_municipio["codigo"],
-                df_malha_hexagonal.to_dict(),
-                df_historico_erro.to_dict(),
-                StatusEtapaProcessamentoEnum.ERRO.value if df_malha_hexagonal.empty else StatusEtapaProcessamentoEnum.CONCLUIDO.value
-            ]
+            lista_dict_resultado.append({
+                "codigo_municipio": municipio[0], 
+                "lista_dict_malha_hexagonal": lista_dict_malha_hexagonal, 
+                "lista_dict_historico_erro": lista_dict_historico_erro, 
+                "status": StatusEtapaProcessamentoEnum.CONCLUIDO.value if lista_dict_malha_hexagonal else StatusEtapaProcessamentoEnum.ERRO.value
+            })
 
-        return df_resultado.set_index(keys="codigo_municipio")
+        return DataFrame(data=lista_dict_resultado)
+    
+
     
     def persistir_resultado(self, df_resultado: DataFrame, conexao_bd: Connection) -> None:
         try:
-            for indice, sr_resultado in df_resultado.iterrows():
-                if sr_resultado["dict_malha_hexagonal"] != {}:
-                    gdf_malha_hexagonal_municipio = DataFrameUtil.dict_para_geodataframe(dict_dados=sr_resultado["dict_malha_hexagonal"])
+            log.info(msg="Persistindo os dados processados na base.")
+
+            for resultado in df_resultado.to_numpy():
+                if resultado[1]:
+                    gdf_malha_hexagonal_municipio = DataFrameUtil.dict_para_geodataframe(dict_dados=resultado[1])
                     self.malha_hexagonal_service.salvar_geodataframe(gdf=gdf_malha_hexagonal_municipio, conexao_bd=conexao_bd)
 
-                if sr_resultado["dict_historico_erro"] != {}:
-                    df_historico_erro = DataFrameUtil.dict_para_dataframe(dict_dados=sr_resultado["dict_historico_erro"])
+                if resultado[2]:
+                    df_historico_erro = DataFrameUtil.dict_para_dataframe(dict_dados=resultado[2])
                     self.historico_erro_service.salvar_dataframe(df=df_historico_erro, conexao_bd=conexao_bd)
 
                 parametros = {
-                    "flag": sr_resultado["status"],
-                    "codigo_municipio": indice
+                    "flag": resultado[3],
+                    "codigo_municipio": resultado[0]
                 }
 
                 self.municipio_service.atualizar_flag_geracao_malha_hexagonal(conexao_bd, parametros)
-                log.info(msg="Os dados foram persistidos com sucesso.")
+
+            log.info(msg="Os dados foram persistidos com sucesso.")
                 
         except Exception as e:
-            log.error(msg=f"Houve um erro ao persistir o resultado do processamento na base. {ExceptionUtil.montar_exception_padrao(e)}")
+            log.error(msg=f"Houve um erro ao persistir o resultado do processamento na base. {ExceptionUtil.montar_erro_exception_padrao(e)}")
             raise e

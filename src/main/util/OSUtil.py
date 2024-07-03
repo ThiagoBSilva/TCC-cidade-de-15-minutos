@@ -22,7 +22,7 @@ class OSUtil:
             if not OSUtil.verificar_diretorio_existente(diretorio):
                 mkdir(path=diretorio)
         except Exception as e:
-            log.error(msg=f"Houve um erro ao criar o diretório {diretorio}. {ExceptionUtil.montar_exception_padrao(e)}")
+            log.error(msg=f"Houve um erro ao criar o diretório {diretorio}. {ExceptionUtil.montar_erro_exception_padrao(e)}")
             raise e
 
     @staticmethod   
@@ -30,8 +30,9 @@ class OSUtil:
         try:
             if OSUtil.verificar_diretorio_existente(diretorio):
                 rmtree(path=diretorio)
-                return 
+                return
+            
             log.warning(msg=f"O diretório informado ({diretorio}) não foi encontrado.")
         except Exception as e:
-            log.error(msg=f"Houve um erro ao tentar remover o diretório {diretorio}. {ExceptionUtil.montar_exception_padrao(e)}")
+            log.error(msg=f"Houve um erro ao tentar remover o diretório {diretorio}. {ExceptionUtil.montar_erro_exception_padrao(e)}")
             raise e

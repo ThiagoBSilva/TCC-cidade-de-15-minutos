@@ -5,6 +5,7 @@ from util.LoggerUtil import LoggerUtil
 from geopandas import GeoDataFrame, read_file
 from pandas import DataFrame, Series
 
+from numpy import ndarray
 import dask.dataframe as dd
 
 log = LoggerUtil.recuperar_logger()
@@ -15,9 +16,9 @@ class DataFrameUtil:
         try:
             return read_file(filename=arquivo_shapefile)
         except Exception as e:
-            log.error(msg=f"Houve um erro ao obter o GeoDataFrame a partir do shapefile especificado no caminho {arquivo_shapefile}. {ExceptionUtil.montar_exception_padrao(e)}")
+            log.error(msg=f"Houve um erro ao obter o GeoDataFrame a partir do shapefile especificado no caminho {arquivo_shapefile}. {ExceptionUtil.montar_erro_exception_padrao(e)}")
             raise e
-    
+
     @staticmethod
     def renomear_colunas_dataframe(df: DataFrame | GeoDataFrame, mapeamento: dict) -> DataFrame | GeoDataFrame:
         try:
@@ -26,7 +27,7 @@ class DataFrameUtil:
 
             return df if type(df) == DataFrame else df.set_geometry(col=ParametrosConstantes.GEOMETRIA_COLUNA_DEFAULT)
         except Exception as e:
-            log.error(msg=f"Houve um erro ao renomar as colunas do {type(df).__name__}. {ExceptionUtil.montar_exception_padrao(e)}")
+            log.error(msg=f"Houve um erro ao renomar as colunas do {type(df).__name__}. {ExceptionUtil.montar_erro_exception_padrao(e)}")
             raise e
     
     @staticmethod
@@ -35,7 +36,7 @@ class DataFrameUtil:
             log.info(msg=f"Alterando o CRS do GeoDataFrame de {gdf.crs.__name__} para {crs}.")
             return gdf.to_crs(crs)
         except Exception as e:
-            log.error(msg=f"Houve um erro ao alterar o CRS do GeoDataFrame de {gdf.crs.__name__} para {crs}. {ExceptionUtil.montar_exception_padrao(e)}")
+            log.error(msg=f"Houve um erro ao alterar o CRS do GeoDataFrame de {gdf.crs.__name__} para {crs}. {ExceptionUtil.montar_erro_exception_padrao(e)}")
             raise e
     
     @staticmethod
@@ -44,7 +45,7 @@ class DataFrameUtil:
             dask_dataframe = dd.from_pandas(data=df, npartitions=qtde_particoes)
             return dask_dataframe.map_partitions(func=funcao, meta=meta, **kwargs).compute()
         except Exception as e:
-            log.error(msg=f"Houve um erro ao processar o {type(df).__name__} com o Dask. {ExceptionUtil.montar_exception_padrao(e)}")
+            log.error(msg=f"Houve um erro ao processar o {type(df).__name__} com o Dask. {ExceptionUtil.montar_erro_exception_padrao(e)}")
             raise e
     
     @staticmethod
@@ -52,7 +53,7 @@ class DataFrameUtil:
         try:
             return DataFrame.from_dict(data=dict_dados)
         except Exception as e:
-            log.error(msg=f"Houve um erro ao gerar o DataFrame a partir do dict. {ExceptionUtil.montar_exception_padrao(e)}")
+            log.error(msg=f"Houve um erro ao gerar o DataFrame a partir do dict. {ExceptionUtil.montar_erro_exception_padrao(e)}")
             raise e
 
     @staticmethod
@@ -60,5 +61,5 @@ class DataFrameUtil:
         try:
             return GeoDataFrame.from_dict(data=dict_dados, geometry=coluna_geometria, crs=crs)
         except Exception as e:
-            log.error(msg=f"Houve um erro ao gerar o GeoDataFrame a partir do dict. {ExceptionUtil.montar_exception_padrao(e)}")
+            log.error(msg=f"Houve um erro ao gerar o GeoDataFrame a partir do dict. {ExceptionUtil.montar_erro_exception_padrao(e)}")
             raise e

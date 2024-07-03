@@ -18,11 +18,11 @@ class OSMNXUtil:
         settings.use_cache = ParametrosConstantes.OSMXN_USAR_CACHE
 
         if parametros_aplicacao.get("nominatim-api").get("local").get("enabled"):
-            settings.nominatim_endpoint = ParametrosConstantes.OSMNX_URL_NOMINATIM_LOCAL
+            settings.nominatim_endpoint = parametros_aplicacao.get("nominatim-api").get("local").get("url")
             settings.nominatim_key = 123456
 
         if parametros_aplicacao.get("overpass-api").get("local").get("enabled"):
-            settings.overpass_endpoint = ParametrosConstantes.OSMNX_URL_OVERPASS_LOCAL
+            settings.overpass_endpoint = parametros_aplicacao.get("overpass-api").get("local").get("url")
             settings.overpass_rate_limit = False
         
     @staticmethod
@@ -30,9 +30,10 @@ class OSMNXUtil:
         try:
             gph = remove_isolated_nodes(G=gph)
             set_edge_attributes(G=gph, values=velocidade_kph, name="speed_kph")
+
             return add_edge_travel_times(G=gph)
         except Exception as e:
-            log.error(msg=f"Houve um erro ao tratar o grafo da rede de transporte. {ExceptionUtil.montar_exception_padrao(e)}")
+            log.error(msg=f"Houve um erro ao tratar o grafo da rede de transporte. {ExceptionUtil.montar_erro_exception_padrao(e)}")
             raise e
 
     @staticmethod  
@@ -40,22 +41,22 @@ class OSMNXUtil:
         try:
             return nearest_nodes(G=gph, X=ponto.x, Y=ponto.y)
         except Exception as e:
-            log.error(msg=f"Houve um erro ao encontrar uma equivalência no grafo para o ponto informado. {ExceptionUtil.montar_exception_padrao(e)}")
+            log.error(msg=f"Houve um erro ao encontrar uma equivalência no grafo para o ponto informado. {ExceptionUtil.montar_erro_exception_padrao(e)}")
             raise e
         
     @staticmethod  
-    def obter_menor_caminho_entre_nos(gph: MultiDiGraph, no_origem: int, no_destino: int, peso: str = "travel_time", cpus: int | None = None) -> None:
+    def obter_menor_caminho_entre_nos(gph: MultiDiGraph, no_origem: int, no_destino: int, peso: str = "travel_time", cpus: int | None = 2) -> None:
         try:
             return shortest_path(G=gph, orig=no_origem, dest=no_destino, weight=peso, cpus=cpus)
         except Exception as e:
-            log.error(msg=f"Houve um erro ao obter o menor caminho entre os nós. {ExceptionUtil.montar_exception_padrao(e)}")
+            log.error(msg=f"Houve um erro ao obter o menor caminho entre os nós. {ExceptionUtil.montar_erro_exception_padrao(e)}")
             raise e
 
     @staticmethod  
-    def calcular_tempo_viagem_rota(gph: MultiDiGraph, rota: list, peso: str = "travel_time"):
+    def calcular_tempo_viagem_rota(gph: MultiDiGraph, rota: list, peso: str = "travel_time") -> float:
         try:
             gdf_rota = route_to_gdf(G=gph, route=rota, weight=peso)
             return round(gdf_rota["travel_time"].sum(), 2)
         except Exception as e:
-            log.error(msg=f"Houve um erro ao calcular o tempo de viagem da rota informada. {ExceptionUtil.montar_exception_padrao(e)}")
+            log.error(msg=f"Houve um erro ao calcular o tempo de viagem da rota informada. {ExceptionUtil.montar_erro_exception_padrao(e)}")
             raise e

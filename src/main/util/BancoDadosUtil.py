@@ -18,7 +18,7 @@ class BancoDadosUtil:
             return parametros_aplicacao.get("database").get(env)
         
         except Exception as e:
-            log.error(msg=f"Houve um erro ao recuperar as configurações do banco. {ExceptionUtil.montar_exception_padrao(e)}")
+            log.error(msg=f"Houve um erro ao recuperar as configurações do banco. {ExceptionUtil.montar_erro_exception_padrao(e)}")
             raise e
         
     @staticmethod
@@ -34,7 +34,7 @@ class BancoDadosUtil:
             return conexao_bd
         
         except Exception as e:
-            log.error(msg=f"Houve um erro ao tentar estabelecer uma conexão o banco de dados. {ExceptionUtil.montar_exception_padrao(e)}")
+            log.error(msg=f"Houve um erro ao tentar estabelecer uma conexão o banco de dados. {ExceptionUtil.montar_erro_exception_padrao(e)}")
             raise e
     
     @staticmethod
@@ -45,5 +45,5 @@ class BancoDadosUtil:
 
             log.info(msg="A conexão com o banco de dados foi encerrada com sucesso.")
         except Exception as e:
-            log.error(msg=f"Houve um erro ao tentar encerrar a conexão com o banco de dados. {ExceptionUtil.montar_exception_padrao(e)}")
+            log.error(msg=f"Houve um erro ao tentar encerrar a conexão com o banco de dados. {ExceptionUtil.montar_erro_exception_padrao(e)}")
             raise e

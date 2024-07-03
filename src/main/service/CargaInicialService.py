@@ -14,7 +14,7 @@ class CargaInicialService:
             self.repository.dropar_tabelas_banco(conexao_bd)
             log.info(msg="As tabelas foram dropadas com sucesso no banco de dados.")
         except Exception as e:
-            log.error(msg=f"Houve um erro ao dropar as tabelas do banco de dados. {ExceptionUtil.montar_exception_padrao(e)}")
+            log.error(msg=f"Houve um erro ao dropar as tabelas do banco de dados. {ExceptionUtil.montar_erro_exception_padrao(e)}")
             raise e
         
     def criar_tabelas_banco(self, conexao_bd: Connection) -> None:
@@ -22,7 +22,7 @@ class CargaInicialService:
             self.repository.criar_tabelas_banco(conexao_bd)
             log.info(msg="As tabelas foram criadas com sucesso no banco de dados.")
         except Exception as e:
-            log.error(msg=f"Houve um erro ao criar as tabelas no banco de dados. {ExceptionUtil.montar_exception_padrao(e)}")
+            log.error(msg=f"Houve um erro ao criar as tabelas no banco de dados. {ExceptionUtil.montar_erro_exception_padrao(e)}")
             raise e
         
     def popular_tabelas_iniciais(self, conexao_bd: Connection) -> None:
@@ -30,5 +30,5 @@ class CargaInicialService:
             self.repository.popular_tabelas_iniciais(conexao_bd)
             log.info(msg="As tabelas iniciais foram populadas com sucesso.")
         except Exception as e:
-            log.error(msg=f"Houve um erro ao popular as tabelas iniciais. {ExceptionUtil.montar_exception_padrao(e)}")
+            log.error(msg=f"Houve um erro ao popular as tabelas iniciais. {ExceptionUtil.montar_erro_exception_padrao(e)}")
             raise e
