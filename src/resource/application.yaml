@@ -1,15 +1,10 @@
 application:
     env: dev
-  
-nominatim-api:
-    local:
-        url: http://localhost:8080/
-        enabled: False
 
 overpass-api:
     local:
-        url: http://localhost:80/api
-        enabled: False
+        url: http://localhost:8080/api
+        enabled: True
 
 database:
     dev:

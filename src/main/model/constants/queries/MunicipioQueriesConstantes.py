@@ -61,22 +61,6 @@ class MunicipioQueriesConstantes:
         LIMIT {ParametrosConstantes.BATCH_QTDE_REGISTROS_ETAPA_CALCULO_MATRIZ_TEMPO_VIAGEM};
     '''
 
-    BUSCAR_ASSOCIACOES_ORIGEM_DESTINO_POR_CODIGO = '''
-        SELECT 
-            malha.codigo AS codigo_origem,
-            ST_ASTEXT(ST_CENTROID(malha.geometria)) AS ponto_origem,
-            amenidade.codigo AS codigo_destino,
-            ST_ASTEXT(amenidade.geometria) AS ponto_destino
-        FROM t_malha_hexagonal_municipio malha, t_amenidade_municipio amenidade
-        WHERE 
-        ST_CONTAINS(
-            ST_BUFFER(ST_CENTROID(ST_TRANSFORM(malha.geometria, 3857)), %(raio_buffer)s), 
-            ST_TRANSFORM(amenidade.geometria, 3857)
-        )
-        AND malha.codigo_municipio = %(codigo_municipio)s
-        AND amenidade.codigo_municipio = %(codigo_municipio)s
-    '''
-
     ATUALIZAR_FLAG_GERACAO_MALHA_HEXAGONAL = '''
         UPDATE t_municipio
         SET flag_geracao_malha_hexagonal = %(flag)s

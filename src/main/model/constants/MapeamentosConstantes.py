@@ -15,3 +15,8 @@ class MapeamentosConstantes:
         "AREA_KM2": "area_km2",
         "geometry": "geometria"
     }
+
+    COLUNAS_NO_GRAFO = {
+        "osmid": "codigo",
+        "geometry": "geometria"
+    }

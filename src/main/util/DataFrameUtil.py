@@ -2,11 +2,9 @@ from model.constants.ParametrosConstantes import ParametrosConstantes
 from util.ExceptionUtil import ExceptionUtil
 from util.LoggerUtil import LoggerUtil
 
+from dask.dataframe import from_pandas
 from geopandas import GeoDataFrame, read_file
 from pandas import DataFrame, Series
-
-from numpy import ndarray
-import dask.dataframe as dd
 
 log = LoggerUtil.recuperar_logger()
 class DataFrameUtil:
@@ -42,7 +40,7 @@ class DataFrameUtil:
     @staticmethod
     def processar_dataframe_dask(df: DataFrame | GeoDataFrame, funcao: any, meta: DataFrame | Series, qtde_particoes: int, **kwargs) -> DataFrame | Series:
         try:
-            dask_dataframe = dd.from_pandas(data=df, npartitions=qtde_particoes)
+            dask_dataframe = from_pandas(data=df, npartitions=qtde_particoes)
             return dask_dataframe.map_partitions(func=funcao, meta=meta, **kwargs).compute()
         except Exception as e:
             log.error(msg=f"Houve um erro ao processar o {type(df).__name__} com o Dask. {ExceptionUtil.montar_erro_exception_padrao(e)}")

@@ -1,9 +1,7 @@
 from util.ExceptionUtil import ExceptionUtil
 from util.LoggerUtil import LoggerUtil
 
-from pyproj import Transformer, CRS
 from shapely import from_wkt
-from shapely.ops import transform
 
 log = LoggerUtil.recuperar_logger()
 class ShapelyUtil:

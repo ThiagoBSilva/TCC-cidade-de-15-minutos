@@ -10,7 +10,7 @@ from util.LoggerUtil import LoggerUtil
 
 from datetime import datetime
 from numpy import ndarray, array
-from pandas import DataFrame, Series
+from pandas import DataFrame
 from sqlalchemy.engine import Connection
 
 log = LoggerUtil.recuperar_logger()

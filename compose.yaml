@@ -1,31 +1,16 @@
-version: "3.9"
+version: "3.8"
 
 services:
-    nominatim:
-        container_name: nominatim-api
-        image: mediagis/nominatim:4.4
-        ports:
-            - "8080:8080"
-        environment:
-            PBF_URL: https://download.geofabrik.de/south-america/brazil-latest.osm.pbf
-            REPLICATION_URL: https://download.geofabrik.de/south-america/brazil-updates/
-            NOMINATIM_PASSWORD: 123456
-        volumes:
-            - nominatim-data:/var/lib/postgresql/14/main
-        shm_size: 1gb
-
     overpass:
         container_name: overpass-api
         image: wiktorn/overpass-api:latest
         ports:
-          - "80:80"
+          - "8080:80"
         environment:
           - OVERPASS_META=yes
           - OVERPASS_MODE=init
           - OVERPASS_PLANET_URL=http://download.geofabrik.de/south-america/brazil-latest.osm.bz2
-          - OVERPASS_DIFF_URL=http://download.openstreetmap.fr/replication/south-america/brazil/minute/
-          - OVERPASS_UPDATE_SLEEP=3600
-          - OVERPASS_USE_AREAS=true
+          - OVERPASS_ALLOW_DUPLICATE_QUERIES=yes
         volumes:
           - overpass-db:/db
         healthcheck:
@@ -33,6 +18,5 @@ services:
           start_period: 48h
 
 volumes:
-    nominatim-data:
     overpass-db:
   

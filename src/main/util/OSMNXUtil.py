@@ -3,10 +3,10 @@ from util.ExceptionUtil import ExceptionUtil
 from util.LoggerUtil import LoggerUtil
 from util.YamlUtil import YAMLUtil
 
+from geopandas import GeoDataFrame
 from networkx import MultiDiGraph, set_edge_attributes
-from osmnx import settings, add_edge_travel_times, nearest_nodes, shortest_path
+from osmnx import settings, add_edge_travel_times, shortest_path, graph_to_gdfs
 from osmnx.utils_graph import remove_isolated_nodes, route_to_gdf
-from shapely import Point
 
 log = LoggerUtil.recuperar_logger()
 class OSMNXUtil:
@@ -36,12 +36,12 @@ class OSMNXUtil:
             log.error(msg=f"Houve um erro ao tratar o grafo da rede de transporte. {ExceptionUtil.montar_erro_exception_padrao(e)}")
             raise e
 
-    @staticmethod  
-    def encontrar_equivalencia_ponto_grafo(ponto: Point, gph: MultiDiGraph) -> None:
+    @staticmethod
+    def grafo_para_geodataframe(gph: MultiDiGraph, converter_nos: bool = True, converter_arestas: bool = False) -> GeoDataFrame:
         try:
-            return nearest_nodes(G=gph, X=ponto.x, Y=ponto.y)
+            return graph_to_gdfs(G=gph, nodes=converter_nos, edges=converter_arestas)
         except Exception as e:
-            log.error(msg=f"Houve um erro ao encontrar uma equivalência no grafo para o ponto informado. {ExceptionUtil.montar_erro_exception_padrao(e)}")
+            log.error(msg=f"Houve um erro ao converter o grafo para um GeoDataFrame.")
             raise e
         
     @staticmethod  

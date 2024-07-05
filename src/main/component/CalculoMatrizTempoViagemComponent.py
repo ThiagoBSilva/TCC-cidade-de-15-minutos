@@ -1,7 +1,9 @@
 from model.constants.ParametrosConstantes import ParametrosConstantes
+from model.constants.MapeamentosConstantes import MapeamentosConstantes
 from model.enums.EtapaProcessamentoEnum import EtapaProcessamentoEnum
 from model.enums.StatusEtapaProcessamentoEnum import StatusEtapaProcessamentoEnum
 from service.AmenidadeMunicipioService import AmenidadeMunicipioService
+from service.CalculoMatrizService import CalculoMatrizService
 from service.HistoricoErroService import HistoricoErroService
 from service.MalhaHexagonalMunicipioService import MalhaHexagonalMunicipioService
 from service.MatrizTempoViagemService import MatrizTempoViagemService
@@ -16,16 +18,15 @@ from util.ShapelyUtil import ShapelyUtil
 from datetime import datetime
 from geopandas import GeoDataFrame
 from networkx import MultiDiGraph
-from numpy import NaN, ndarray, array
-from pandas import DataFrame, Series
+from numpy import NaN, array
+from pandas import DataFrame
 from sqlalchemy.engine import Connection
-
-from osmnx import plot_graph_route
 
 log = LoggerUtil.recuperar_logger()
 class CalculoMatrizTempoViagemComponent:
     
     amenidade_municipio_service = AmenidadeMunicipioService()
+    calculo_matriz_service = CalculoMatrizService()
     historico_erro_service = HistoricoErroService()
     malha_hexagonal_municipio_service = MalhaHexagonalMunicipioService()
     matriz_tempo_viagem_service = MatrizTempoViagemService()
@@ -45,9 +46,15 @@ class CalculoMatrizTempoViagemComponent:
     def __calcular_raio_area_analise(self, velocidade_kph: float) -> float:
         return velocidade_kph * 15/60 * 1000 * ParametrosConstantes.MULTIPLICADOR_AREA_ANALISE_HEXAGONO
 
+    def __obter_geodataframe_grafo(self, gph: MultiDiGraph) -> GeoDataFrame:
+        gdf_no_grafo = OSMNXUtil.grafo_para_geodataframe(gph)
+        gdf_no_grafo["osmid"] = gdf_no_grafo.index
+        gdf_no_grafo = DataFrameUtil.renomear_colunas_dataframe(df=gdf_no_grafo, mapeamento=MapeamentosConstantes.COLUNAS_NO_GRAFO)
 
+        return gdf_no_grafo.loc[:, ["codigo", "geometria"]]
 
-    def __montar_associacoes_origem_destino(self, codigo_municipio: int, modalidade_transporte: list, conexao_bd: Connection) -> DataFrame:
+    def __montar_associacoes_origem_destino(self, codigo_municipio: int, modalidade_transporte: list, 
+                                            gph_rede_transporte: MultiDiGraph, conexao_bd: Connection) -> DataFrame:
         try:
             log.info(msg=f"Montando as associações de origens e destinos para o município na modalidade {modalidade_transporte[2]}.")
 
@@ -56,14 +63,15 @@ class CalculoMatrizTempoViagemComponent:
                 "raio_buffer": self.__calcular_raio_area_analise(velocidade_kph=modalidade_transporte[3]),
             }
 
-            df_origem_destino = self.municipio_service.buscar_associacoes_origem_destino_por_codigo(conexao_bd, parametros)
+            self.calculo_matriz_service.dropar_tabela_temporaria_grafo(conexao_bd, parametros)
+            gdf_grafo = self.__obter_geodataframe_grafo(gph=gph_rede_transporte)
+            self.calculo_matriz_service.salvar_grafo_municipio(gdf=gdf_grafo, conexao_bd=conexao_bd, parametros=parametros)
+
+            df_origem_destino = self.calculo_matriz_service.buscar_associacoes_origem_destino_por_codigo_municipio(conexao_bd, parametros)
 
             if df_origem_destino.empty:
                 raise Exception("Não foi possível realizar nenhuma associação entre origens e destinos.")
             
-            df_origem_destino["ponto_origem"] = array(ShapelyUtil.wkt_para_geometria(geometria_wkt=ponto) for ponto in df_origem_destino["ponto_origem"].to_numpy())
-            df_origem_destino["ponto_destino"] = array(ShapelyUtil.wkt_para_geometria(geometria_wkt=ponto) for ponto in df_origem_destino["ponto_destino"].to_numpy())
-
             return df_origem_destino
         
         except Exception as e:
@@ -88,26 +96,12 @@ class CalculoMatrizTempoViagemComponent:
 
 
 
-    def __gerar_equivalencias_grafo(self, gph_rede_transporte: MultiDiGraph, df_origem_destino: DataFrame) -> DataFrame:
-        try:
-            log.info(msg=f"Gerando as equivalências dos pontos de origem e destino para nós do grafo.")
-            
-            df_origem_destino["no_origem"] = array(OSMNXUtil.encontrar_equivalencia_ponto_grafo(ponto, gph=gph_rede_transporte) for ponto in df_origem_destino["ponto_origem"].to_numpy())
-            df_origem_destino["no_destino"] = array(OSMNXUtil.encontrar_equivalencia_ponto_grafo(ponto, gph=gph_rede_transporte) for ponto in df_origem_destino["ponto_destino"].to_numpy())
-
-            return df_origem_destino
-        except Exception as e:
-            log.error(msg=f"Houve um erro ao gerar as equivalências dos pontos de origem e destino para nós do grafo. {ExceptionUtil.montar_erro_exception_padrao(e)}")
-            raise e
-
-
-
     def __obter_menor_tempo_origem_destino(self, gph_rede_transporte: MultiDiGraph, origem_destino: list) -> float:
         try:
-            if origem_destino[4] == origem_destino[5]:
+            if origem_destino[1] == origem_destino[3]:
                 return 0
             
-            rota = OSMNXUtil.obter_menor_caminho_entre_nos(gph=gph_rede_transporte, no_origem=origem_destino[4], no_destino=origem_destino[5])
+            rota = OSMNXUtil.obter_menor_caminho_entre_nos(gph=gph_rede_transporte, no_origem=origem_destino[1], no_destino=origem_destino[3])
             return OSMNXUtil.calcular_tempo_viagem_rota(gph=gph_rede_transporte, rota=rota)
 
         except Exception as e:
@@ -137,9 +131,8 @@ class CalculoMatrizTempoViagemComponent:
             log.info(msg=f"Calculando a matriz de tempos de viagem para o município {municipio[0]} - {municipio[1]}.")
 
             for modalidade_transporte in df_modalidade_transporte.to_numpy():
-                df_origem_destino = self.__montar_associacoes_origem_destino(municipio[0], modalidade_transporte, conexao_bd)
                 gph_rede_transporte = self.__obter_grafo_rede_transporte(municipio, modalidade_transporte)
-                df_origem_destino = self.__gerar_equivalencias_grafo(gph_rede_transporte, df_origem_destino)
+                df_origem_destino = self.__montar_associacoes_origem_destino(municipio[0], modalidade_transporte, gph_rede_transporte, conexao_bd)
                 df_origem_destino = self.__calcular_tempos_viagem(gph_rede_transporte, df_origem_destino)
 
                 for origem_destino in df_origem_destino.to_numpy():
@@ -147,7 +140,7 @@ class CalculoMatrizTempoViagemComponent:
                         "codigo_hexagono": origem_destino[0], 
                         "codigo_amenidade": origem_destino[2], 
                         "codigo_modalidade_transporte": modalidade_transporte[0], 
-                        "tempo_viagem_seg": origem_destino[6]
+                        "tempo_viagem_seg": origem_destino[4]
                     })
 
             log.info(msg=f"A matriz de tempos de viagem foi calculada com sucesso para o município {municipio[0]} - {municipio[1]}.")
@@ -200,8 +193,8 @@ class CalculoMatrizTempoViagemComponent:
                     self.historico_erro_service.salvar_dataframe(df=df_historico_erro, conexao_bd=conexao_bd)
 
                 parametros = {
-                    "flag": resultado[0],
-                    "codigo_municipio": resultado[3]
+                    "flag": resultado[3],
+                    "codigo_municipio": resultado[0]
                 }
 
                 self.municipio_service.atualizar_flag_calculo_matriz_tempo_viagem(conexao_bd, parametros)
