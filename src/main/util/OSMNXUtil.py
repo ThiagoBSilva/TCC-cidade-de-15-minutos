@@ -17,10 +17,6 @@ class OSMNXUtil:
         
         settings.use_cache = ParametrosConstantes.OSMXN_USAR_CACHE
 
-        if parametros_aplicacao.get("nominatim-api").get("local").get("enabled"):
-            settings.nominatim_endpoint = parametros_aplicacao.get("nominatim-api").get("local").get("url")
-            settings.nominatim_key = 123456
-
         if parametros_aplicacao.get("overpass-api").get("local").get("enabled"):
             settings.overpass_endpoint = parametros_aplicacao.get("overpass-api").get("local").get("url")
             settings.overpass_rate_limit = False
