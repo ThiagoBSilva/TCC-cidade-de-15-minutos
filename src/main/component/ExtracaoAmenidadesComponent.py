@@ -79,7 +79,7 @@ class ExtracaoAmenidadesComponent:
                 "entidade_erro": "t_municipio", 
                 "chave_entidade": municipio[0], 
                 "etapa_erro": EtapaProcessamentoEnum.EXTRACAO_AMENIDADES.value, 
-                "mensagem_erro": ExceptionUtil.montar_erro_exception_historico_erro(e), 
+                "mensagem_erro": ExceptionUtil.montar_erro_exception_historico_erro(), 
                 "data_hora_ocorrencia": datetime.now()
             })
 
