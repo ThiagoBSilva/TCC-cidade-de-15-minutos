@@ -1,5 +1,5 @@
 application:
-    env: dev
+    env: prd
 
 overpass-api:
     local:
