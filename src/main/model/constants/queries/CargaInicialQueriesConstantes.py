@@ -113,7 +113,7 @@ class CargaInicialQueriesConstantes:
             codigo_hexagono INT NOT NULL,
             codigo_amenidade INT NOT NULL,
             codigo_modalidade_transporte SMALLINT NOT NULL,
-            tempo_viagem_seg NUMERIC(8, 2) NOT NULL
+            tempo_viagem_seg NUMERIC(8, 2) NULL
         );
         ALTER TABLE t_matriz_tempo_viagem
             ADD PRIMARY KEY (codigo),

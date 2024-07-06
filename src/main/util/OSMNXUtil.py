@@ -20,6 +20,7 @@ class OSMNXUtil:
         if parametros_aplicacao.get("overpass-api").get("local").get("enabled"):
             settings.overpass_endpoint = parametros_aplicacao.get("overpass-api").get("local").get("url")
             settings.overpass_rate_limit = False
+            settings.max_query_area_size = settings.max_query_area_size * 1000
         
     @staticmethod
     def tratar_grafo_rede_transporte(gph: MultiDiGraph, velocidade_kph: float) -> MultiDiGraph:
