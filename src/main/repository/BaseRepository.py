@@ -19,7 +19,8 @@ class BaseRepository:
     def buscar_dataframe(self, sql: str, conexao_bd: Connection, parametros: dict = None) -> DataFrame:
         return read_sql(sql=sql, con=conexao_bd, params=parametros)
     
-    def buscar_geodataframe(self, sql: str, conexao_bd: Connection, coluna_geometria: str = ParametrosConstantes.GEOMETRIA_COLUNA_DEFAULT, parametros: dict = None) -> GeoDataFrame:
+    def buscar_geodataframe(self, sql: str, conexao_bd: Connection, 
+                            coluna_geometria: str = ParametrosConstantes.GEOMETRIA_COLUNA_DEFAULT, parametros: dict = None) -> GeoDataFrame:
         return read_postgis(sql=sql, con=conexao_bd, geom_col=coluna_geometria, params=parametros)
     
     def executar_sql(self, sql: str, conexao_bd: Connection, **kwargs) -> None:

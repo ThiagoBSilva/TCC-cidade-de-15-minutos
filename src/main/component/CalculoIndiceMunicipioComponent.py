@@ -32,7 +32,7 @@ class CalculoIndiceMunicipioComponent:
         lista_dict_historico_erro = list()
 
         try:
-            log.info(msg=f"Calculando índice de 15 minutos para o município {municipio[0]} - {municipio[1]}.")
+            log.info(msg=f"[{municipio[0]} - {municipio[1]}] Calculando índice de 15 minutos para o município.")
 
             parametros = {
                 "codigo_municipio": municipio[0]
@@ -41,12 +41,13 @@ class CalculoIndiceMunicipioComponent:
             self.calculo_indice_service.calcular_indice_15min_hexagono(conexao_bd, parametros)
             self.calculo_indice_service.calcular_indice_15min_municipio(conexao_bd, parametros)
 
-            log.info(msg=f"O índice de 15 minutos foi calculado com sucesso para o município {municipio[0]} - {municipio[1]}.")
+            log.info(msg=f"[{municipio[0]} - {municipio[1]}] O índice de 15 minutos foi calculado com sucesso para o município.")
+
             return lista_dict_historico_erro
 
         except Exception as e:
-            log.error(msg=f"Houve um erro ao calcular o índice de 15 minutos para o município {municipio[0]} - {municipio[1]}. "
-                      f"{ExceptionUtil.montar_erro_exception_padrao(e)}")
+            log.error(msg=f"[{municipio[0]} - {municipio[1]}] Houve um erro ao calcular o índice de 15 minutos para o município. "
+                          f"{ExceptionUtil.montar_erro_exception_padrao(e)}")
             
             lista_dict_historico_erro.append({
                 "entidade_erro": "t_municipio", 
@@ -86,8 +87,8 @@ class CalculoIndiceMunicipioComponent:
                     self.historico_service.salvar_dataframe(df=df_historico_erro, conexao_bd=conexao_bd)
 
                 parametros = {
-                    "flag": resultado[2],
-                    "codigo_municipio": resultado[0]
+                    "codigo_municipio": resultado[0],
+                    "flag": resultado[2]
                 }
 
                 self.municipio_service.atualizar_flag_calculo_indice_15min(conexao_bd, parametros)
@@ -95,5 +96,6 @@ class CalculoIndiceMunicipioComponent:
             log.info(msg="Os dados foram persistidos com sucesso.")
 
         except Exception as e:
-            log.error(msg=f"Houve um erro ao persistir o resultado do processamento na base. {ExceptionUtil.montar_erro_exception_padrao(e)}")
+            log.error(msg=f"Houve um erro ao persistir o resultado do processamento na base. "
+                          f"{ExceptionUtil.montar_erro_exception_padrao(e)}")
             raise e

@@ -32,7 +32,7 @@ class CalculoIndiceUnidadeFederativaComponent:
         lista_dict_historico_erro = list()
 
         try:
-            log.info(msg=f"Calculando índice de 15 minutos para a unidade federativa {unidade_federativa[0]} - {unidade_federativa[1]}.")
+            log.info(msg=f"[{unidade_federativa[0]} - {unidade_federativa[1]}] Calculando índice de 15 minutos para a unidade federativa.")
 
             parametros = {
                 "codigo_unidade_federativa": unidade_federativa[0]
@@ -40,12 +40,12 @@ class CalculoIndiceUnidadeFederativaComponent:
 
             self.calculo_indice_service.calcular_indice_15min_unidade_federativa(conexao_bd, parametros)
 
-            log.info(msg=f"O índice de 15 minutos foi calculado com sucesso para a unidade federativa {unidade_federativa[0]} - {unidade_federativa[1]}.")
+            log.info(msg=f"[{unidade_federativa[0]} - {unidade_federativa[1]}] O índice de 15 minutos foi calculado com sucesso para a unidade federativa.")
             return lista_dict_historico_erro
 
         except Exception as e:
-            log.error(msg=f"Houve um erro ao calcular o índice de 15 minutos para a unidade federativa {unidade_federativa[0]} - {unidade_federativa[1]}. "
-                      f"{ExceptionUtil.montar_erro_exception_padrao(e)}")
+            log.error(msg=f"[{unidade_federativa[0]} - {unidade_federativa[1]}] Houve um erro ao calcular o índice de 15 minutos para a unidade federativa. "
+                          f"{ExceptionUtil.montar_erro_exception_padrao(e)}")
             
             lista_dict_historico_erro.append({
                 "entidade_erro": "t_unidade_federativa", 
@@ -85,8 +85,8 @@ class CalculoIndiceUnidadeFederativaComponent:
                     self.historico_service.salvar_dataframe(df=df_historico_erro, conexao_bd=conexao_bd)
 
                 parametros = {
-                    "flag": resultado[2],
-                    "codigo_unidade_federativa": resultado[0]
+                    "codigo_unidade_federativa": resultado[0],
+                    "flag": resultado[2]
                 }
 
                 self.unidade_federativa_service.atualizar_flag_calculo_indice_15min(conexao_bd, parametros)
@@ -94,5 +94,6 @@ class CalculoIndiceUnidadeFederativaComponent:
             log.info(msg="Os dados foram persistidos com sucesso.")
 
         except Exception as e:
-            log.error(msg=f"Houve um erro ao persistir o resultado do processamento na base. {ExceptionUtil.montar_erro_exception_padrao(e)}")
+            log.error(msg=f"Houve um erro ao persistir o resultado do processamento na base. "
+                          f"{ExceptionUtil.montar_erro_exception_padrao(e)}")
             raise e

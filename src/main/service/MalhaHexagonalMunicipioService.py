@@ -14,12 +14,14 @@ class MalhaHexagonalMunicipioService:
         try:
             self.repository.salvar_geodataframe(gdf, conexao_bd)
         except Exception as e:
-            log.error(msg=f"Houve um erro ao persistir os dados do GeoDataFrame na tabela {self.repository.ENTIDADE}. {ExceptionUtil.montar_erro_exception_padrao(e)}")
+            log.error(msg=f"Houve um erro ao persistir os dados do GeoDataFrame na tabela {self.repository.ENTIDADE}. "
+                          f"{ExceptionUtil.montar_erro_exception_padrao(e)}")
             raise e
         
     def buscar_por_codigo_municipio(self, conexao_bd: Connection, parametros: dict) -> GeoDataFrame:
         try:
             return self.repository.buscar_por_codigo_municipio(conexao_bd, parametros)
         except Exception as e:
-            log.error(msg=f"Houve um erro ao buscar a malha hexagonal pelo código do município. {ExceptionUtil.montar_erro_exception_padrao(e)}")
+            log.error(msg=f"Houve um erro ao buscar a malha hexagonal pelo código do município. "
+                          f"{ExceptionUtil.montar_erro_exception_padrao(e)}")
             raise e

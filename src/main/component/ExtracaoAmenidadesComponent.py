@@ -49,13 +49,13 @@ class ExtracaoAmenidadesComponent:
         lista_dict_historico_erro = list()
 
         try:
-            log.info(msg=f"Extraindo as amenidades do município {municipio[0]} - {municipio[1]}.")
+            log.info(msg=f"[{municipio[0]} - {municipio[1]}] Extraindo as amenidades do município.")
             
             for tag_osm in df_tags_osm.to_numpy():
                 gdf_feicao_osmnx = self.osmxn_client_service.obter_feicoes_por_poligono(poligono=municipio[2], tag=tag_osm[1])
 
                 if gdf_feicao_osmnx.empty:
-                    log.warning(msg=f"Nenhuma amenidade foi encontrada para o município {municipio[0]} - {municipio[1]} utilizando a tag {tag_osm[1]}.")
+                    log.warning(msg=f"[{municipio[0]} - {municipio[1]}] Nenhuma amenidade foi encontrada para o município utilizando a tag {tag_osm[1]}.")
                     continue
 
                 for geometria_feicao in gdf_feicao_osmnx["geometry"].to_numpy():
@@ -66,14 +66,15 @@ class ExtracaoAmenidadesComponent:
                     })
 
             if not lista_dict_amenidade_municipio:
-                raise Exception(f"Nenhuma amenidade foi encontrada para o município")
+                raise Exception(f"[{municipio[0]} - {municipio[1]}] Nenhuma amenidade foi encontrada para o município")
 
-            log.info(msg=f"As amenidades foram extraídas com sucesso para o município {municipio[0]} - {municipio[1]}.")
+            log.info(msg=f"[{municipio[0]} - {municipio[1]}] As amenidades foram extraídas com sucesso para o município.")
 
             return lista_dict_amenidade_municipio, lista_dict_historico_erro
         
         except Exception as e:
-            log.error(msg=f"Houve um erro ao extrair as amenidades do município {municipio[0]} - {municipio[1]}. {ExceptionUtil.montar_erro_exception_padrao(e)}")
+            log.error(msg=f"[{municipio[0]} - {municipio[1]}] Houve um erro ao extrair as amenidades do município. "
+                          f"{ExceptionUtil.montar_erro_exception_padrao(e)}")
 
             lista_dict_historico_erro.append({
                 "entidade_erro": "t_municipio", 
@@ -118,8 +119,8 @@ class ExtracaoAmenidadesComponent:
                     self.historico_erro_service.salvar_dataframe(df=df_historico_erro, conexao_bd=conexao_bd)
 
                 parametros = {
-                    "flag": resultado[3],
-                    "codigo_municipio": resultado[0]
+                    "codigo_municipio": resultado[0],
+                    "flag": resultado[3]
                 }
 
                 self.municipio_service.atualizar_flag_extracao_amenidades(conexao_bd, parametros)
@@ -127,6 +128,7 @@ class ExtracaoAmenidadesComponent:
             log.info(msg="Os dados foram persistidos com sucesso.")
                 
         except Exception as e:
-            log.error(msg=f"Houve um erro ao persistir o resultado do processamento na base. {ExceptionUtil.montar_erro_exception_padrao(e)}")
+            log.error(msg=f"Houve um erro ao persistir o resultado do processamento na base. "
+                          f"{ExceptionUtil.montar_erro_exception_padrao(e)}")
             raise e
 

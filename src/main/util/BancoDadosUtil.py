@@ -14,11 +14,12 @@ class BancoDadosUtil:
         try:
             parametros_aplicacao = YAMLUtil.converter_yaml_para_dict(arquivo_yaml=ParametrosConstantes.CAMINHO_APPLICATION_YAML)
             env = parametros_aplicacao.get("application").get("env")
-            
+
             return parametros_aplicacao.get("database").get(env)
-        
+             
         except Exception as e:
-            log.error(msg=f"Houve um erro ao recuperar as configurações do banco. {ExceptionUtil.montar_erro_exception_padrao(e)}")
+            log.error(msg=f"Houve um erro ao recuperar as configurações do banco. "
+                          f"{ExceptionUtil.montar_erro_exception_padrao(e)}")
             raise e
         
     @staticmethod
@@ -31,10 +32,12 @@ class BancoDadosUtil:
             conexao_bd = engine.connect()
 
             log.info(msg=f"A conexão com o banco de dados {config.get('name')} foi estabelecida com sucesso.")
+
             return conexao_bd
         
         except Exception as e:
-            log.error(msg=f"Houve um erro ao tentar estabelecer uma conexão o banco de dados. {ExceptionUtil.montar_erro_exception_padrao(e)}")
+            log.error(msg=f"Houve um erro ao tentar estabelecer uma conexão o banco de dados. "
+                          f"{ExceptionUtil.montar_erro_exception_padrao(e)}")
             raise e
     
     @staticmethod
@@ -46,6 +49,8 @@ class BancoDadosUtil:
             conexao_bd.engine.dispose()
 
             log.info(msg="A conexão com o banco de dados foi encerrada com sucesso.")
+            
         except Exception as e:
-            log.error(msg=f"Houve um erro ao tentar encerrar a conexão com o banco de dados. {ExceptionUtil.montar_erro_exception_padrao(e)}")
+            log.error(msg=f"Houve um erro ao tentar encerrar a conexão com o banco de dados. "
+                          f"{ExceptionUtil.montar_erro_exception_padrao(e)}")
             raise e

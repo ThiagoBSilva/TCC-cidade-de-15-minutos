@@ -17,8 +17,10 @@ class IBGEClientService:
             
             self.client.obter_shapefile_unidades_federativas()
             log.info(msg="O shapefile das unidades federativas foi obtido com sucesso.")
+            
         except Exception as e:
-            log.error(msg=f"Houve um erro ao buscar o shapefile das unidades federativas. {ExceptionUtil.montar_erro_exception_padrao(e)}")
+            log.error(msg=f"Houve um erro ao buscar o shapefile das unidades federativas. "
+                          f"{ExceptionUtil.montar_erro_exception_padrao(e)}")
             raise e
         
     def obter_shapefile_municipios(self) -> None:
@@ -29,7 +31,9 @@ class IBGEClientService:
             
             self.client.obter_shapefile_municipios()
             log.info(msg="O shapefile dos municípios foi obtido com sucesso.")
+
         except Exception as e:
-            log.error(msg=f"Houve um erro ao buscar o shapefile dos municípios. {ExceptionUtil.montar_erro_exception_padrao(e)}")
+            log.error(msg=f"Houve um erro ao buscar o shapefile dos municípios. "
+                          f"{ExceptionUtil.montar_erro_exception_padrao(e)}")
             raise e
         

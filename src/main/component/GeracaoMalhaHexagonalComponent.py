@@ -1,4 +1,3 @@
-from model.constants.ParametrosConstantes import ParametrosConstantes
 from model.enums.EtapaProcessamentoEnum import EtapaProcessamentoEnum
 from model.enums.StatusEtapaProcessamentoEnum import StatusEtapaProcessamentoEnum
 from service.HistoricoErroService import HistoricoErroService
@@ -21,6 +20,8 @@ class GeracaoMalhaHexagonalComponent:
     malha_hexagonal_service = MalhaHexagonalMunicipioService()
     municipio_service = MunicipioService()
 
+
+
     def verificar_nao_existencia_registros_pendentes(self, conexao_bd: Connection) -> bool:
         df_qtde_registros_pendentes = self.municipio_service.buscar_qtde_registros_pendentes_geracao_malha_hexagonal(conexao_bd)
         qtde_registros_pendentes = df_qtde_registros_pendentes["quantidade"][0]
@@ -36,7 +37,7 @@ class GeracaoMalhaHexagonalComponent:
         lista_dict_historico_erro = list()
 
         try:
-            log.info(msg=f"Gerando a malha do município {municipio[0]} - {municipio[1]}.")
+            log.info(msg=f"[{municipio[0]} - {municipio[1]}] Gerando a malha hexagonal do município.")
             
             hexagonos_h3 = list()
 
@@ -44,7 +45,8 @@ class GeracaoMalhaHexagonalComponent:
                 hexagonos_h3 = hexagonos_h3 + list(self.h3_client_service.obter_hexagonos_h3_por_poligono(poligono))
 
             if not hexagonos_h3:
-                raise Exception("Não foi possível obter a malha hexagonal do município, nenhum hexágono encontrado para o polígono e resolução informados")
+                raise Exception(f"[{municipio[0]} - {municipio[1]}] Não foi possível obter a malha hexagonal do município, "
+                                 "nenhum hexágono encontrado para o polígono e resolução informados")
 
             for hex_h3 in hexagonos_h3:
                 geometria = self.h3_client_service.obter_poligono_hexagono_h3(hexagono_h3=hex_h3)
@@ -55,11 +57,13 @@ class GeracaoMalhaHexagonalComponent:
                     "codigo_municipio": municipio[0]
                 })
                 
-            log.info(msg=f"A malha hexagonal para o município {municipio[0]} - {municipio[1]} foi gerada com sucesso.")
+            log.info(msg=f"[{municipio[0]} - {municipio[1]}] A malha hexagonal do município foi gerada com sucesso.")
+            
             return lista_dict_malha_hexagonal, lista_dict_historico_erro
 
         except Exception as e:
-            log.error(msg=f"Houve um erro ao gerar a malha hexagonal para o município {municipio[0]} - {municipio[1]}. {ExceptionUtil.montar_erro_exception_padrao(e)}")
+            log.error(msg=f"[{municipio[0]} - {municipio[1]}] Houve um erro ao gerar a malha hexagonal para o município. "
+                          f"{ExceptionUtil.montar_erro_exception_padrao(e)}")
 
             lista_dict_historico_erro.append({
                 "entidade_erro": "t_municipio",
@@ -104,8 +108,8 @@ class GeracaoMalhaHexagonalComponent:
                     self.historico_erro_service.salvar_dataframe(df=df_historico_erro, conexao_bd=conexao_bd)
 
                 parametros = {
-                    "flag": resultado[3],
-                    "codigo_municipio": resultado[0]
+                    "codigo_municipio": resultado[0],
+                    "flag": resultado[3]
                 }
 
                 self.municipio_service.atualizar_flag_geracao_malha_hexagonal(conexao_bd, parametros)
@@ -113,5 +117,6 @@ class GeracaoMalhaHexagonalComponent:
             log.info(msg="Os dados foram persistidos com sucesso.")
                 
         except Exception as e:
-            log.error(msg=f"Houve um erro ao persistir o resultado do processamento na base. {ExceptionUtil.montar_erro_exception_padrao(e)}")
+            log.error(msg=f"Houve um erro ao persistir o resultado do processamento na base. "
+                          f"{ExceptionUtil.montar_erro_exception_padrao(e)}")
             raise e

@@ -32,6 +32,8 @@ class CalculoMatrizTempoViagemComponent:
     municipio_service = MunicipioService()
     osmnx_client_service = OSMNXClientService()
 
+
+
     def verificar_nao_existencia_registros_pendentes(self, conexao_bd: Connection) -> bool:
         df_qtde_registros_pendentes = self.municipio_service.buscar_qtde_registros_pendentes_calculo_matriz_tempo_viagem(conexao_bd)
         qtde_registros_pedentes = df_qtde_registros_pendentes["quantidade"][0]
@@ -45,6 +47,8 @@ class CalculoMatrizTempoViagemComponent:
     def __calcular_raio_area_analise(self, velocidade_kph: float) -> float:
         return velocidade_kph * 15/60 * 1000 * ParametrosConstantes.MULTIPLICADOR_AREA_ANALISE_HEXAGONO
 
+
+
     def __obter_geodataframe_grafo(self, gph: MultiDiGraph) -> GeoDataFrame:
         gdf_no_grafo = OSMNXUtil.grafo_para_geodataframe(gph)
         gdf_no_grafo["osmid"] = gdf_no_grafo.index
@@ -52,10 +56,12 @@ class CalculoMatrizTempoViagemComponent:
 
         return gdf_no_grafo.loc[:, ["codigo", "geometria"]]
 
+
+
     def __montar_associacoes_origem_destino(self, municipio: list, modalidade_transporte: list, 
                                             gph_rede_transporte: MultiDiGraph, conexao_bd: Connection) -> DataFrame:
         try:
-            log.info(msg=f"Montando as associações de origens e destinos para o município {municipio[0]} - {municipio[1]} na modalidade {modalidade_transporte[2]}.")
+            log.info(msg=f"[{municipio[0]} - {municipio[1]}] Montando as associações de origens e destinos para o município na modalidade {modalidade_transporte[2]}.")
 
             parametros = {
                 "codigo_municipio": municipio[0],
@@ -69,19 +75,20 @@ class CalculoMatrizTempoViagemComponent:
             df_origem_destino = self.calculo_matriz_service.buscar_associacoes_origem_destino_por_codigo_municipio(conexao_bd, parametros)
 
             if df_origem_destino.empty:
-                raise Exception(f"Não foi possível realizar nenhuma associação entre origens e destinos para o município {municipio[0]} - {municipio[1]}.")
+                raise Exception(f"[{municipio[0]} - {municipio[1]}] Não foi possível realizar nenhuma associação entre origens e destinos para o município.")
             
             return df_origem_destino
         
         except Exception as e:
-            log.error(msg=f"Houve um erro ao montar as associações de origem e destino para o município {municipio[0]} - {municipio[1]}. {ExceptionUtil.montar_erro_exception_padrao(e)}")
+            log.error(msg=f"[{municipio[0]} - {municipio[1]}] Houve um erro ao montar as associações de origem e destino para o município. "
+                          f"{ExceptionUtil.montar_erro_exception_padrao(e)}")
             raise e
 
 
 
     def __obter_grafo_rede_transporte(self, municipio: list, modalidade_transporte: list) -> MultiDiGraph:
         try:
-            log.info(msg=f"Obtendo o grafo da rede de transporte do município {municipio[0]} - {municipio[1]}.")
+            log.info(msg=f"[{municipio[0]} - {municipio[1]}] Obtendo o grafo da rede de transporte do município.")
             
             gph_rede_transporte = self.osmnx_client_service.obter_grafo_por_poligono(
                 poligono=municipio[2], 
@@ -89,8 +96,10 @@ class CalculoMatrizTempoViagemComponent:
             )
             
             return OSMNXUtil.tratar_grafo_rede_transporte(gph=gph_rede_transporte, velocidade_kph=modalidade_transporte[3])
+        
         except Exception as e:
-            log.error(msg=f"Houve um erro ao obter o grafo tratado da rede de transporte do município {municipio[0]} - {municipio[1]}. {ExceptionUtil.montar_erro_exception_padrao(e)}")
+            log.error(msg=f"[{municipio[0]} - {municipio[1]}] Houve um erro ao obter o grafo tratado da rede de transporte do município. "
+                          f"{ExceptionUtil.montar_erro_exception_padrao(e)}")
             raise e
 
 
@@ -104,20 +113,23 @@ class CalculoMatrizTempoViagemComponent:
             return OSMNXUtil.calcular_tempo_viagem_rota(gph=gph_rede_transporte, rota=rota)
 
         except Exception as e:
-            log.error(msg=f"Houve um erro ao obter o menor tempo entre a origem {origem_destino[0]} e destino {origem_destino[2]}. {ExceptionUtil.montar_erro_exception_padrao(e)}")
+            log.error(msg=f"Houve um erro ao obter o menor tempo entre a origem {origem_destino[0]} e destino {origem_destino[2]}. "
+                          f"{ExceptionUtil.montar_erro_exception_padrao(e)}")
             return NaN
 
 
 
     def __calcular_tempos_viagem(self, municipio: list, gph_rede_transporte: MultiDiGraph, df_origem_destino: DataFrame) -> DataFrame:
         try:
-            log.info(msg=f"Calculando os tempos de viagem do município {municipio[0]} - {municipio[1]}.")
+            log.info(msg=f"[{municipio[0]} - {municipio[1]}] Calculando os tempos de viagem do município.")
 
-            df_origem_destino["tempo_viagem"] = array(self.__obter_menor_tempo_origem_destino(gph_rede_transporte, origem_destino) for origem_destino in df_origem_destino.to_numpy())
+            df_origem_destino["tempo_viagem"] = array(self.__obter_menor_tempo_origem_destino(gph_rede_transporte, origem_destino) 
+                                                      for origem_destino in df_origem_destino.to_numpy())
             
             return df_origem_destino
         except Exception as e:
-            log.error(msg=f"Houve um erro ao calcular os tempos de viagem do município {municipio[0]} - {municipio[1]}. {ExceptionUtil.montar_erro_exception_padrao(e)}")
+            log.error(msg=f"[{municipio[0]} - {municipio[1]}] Houve um erro ao calcular os tempos de viagem do município. "
+                          f"{ExceptionUtil.montar_erro_exception_padrao(e)}")
             raise e
 
 
@@ -127,7 +139,7 @@ class CalculoMatrizTempoViagemComponent:
         lista_dict_historico_erro = list()
 
         try:
-            log.info(msg=f"Calculando a matriz de tempos de viagem para o município {municipio[0]} - {municipio[1]}.")
+            log.info(msg=f"[{municipio[0]} - {municipio[1]}] Calculando a matriz de tempos de viagem para o município.")
 
             for modalidade_transporte in df_modalidade_transporte.to_numpy():
                 gph_rede_transporte = self.__obter_grafo_rede_transporte(municipio, modalidade_transporte)
@@ -142,12 +154,13 @@ class CalculoMatrizTempoViagemComponent:
                         "tempo_viagem_seg": origem_destino[4]
                     })
 
-            log.info(msg=f"A matriz de tempos de viagem foi calculada com sucesso para o município {municipio[0]} - {municipio[1]}.")
+            log.info(msg=f"[{municipio[0]} - {municipio[1]}] A matriz de tempos de viagem foi calculada com sucesso para o município.")
+
             return lista_dict_matriz_tempo_viagem, lista_dict_historico_erro
 
         except Exception as e:
-            log.error(msg=f"Houve um erro ao calcular a matriz de tempos de viagem para o município {municipio[0]} - {municipio[1]}. "
-                      f"{ExceptionUtil.montar_erro_exception_padrao(e)}")
+            log.error(msg=f"[{municipio[0]} - {municipio[1]}] Houve um erro ao calcular a matriz de tempos de viagem para o município. "
+                          f"{ExceptionUtil.montar_erro_exception_padrao(e)}")
             
             lista_dict_historico_erro.append({
                 "entidade_erro": "t_municipio", 
@@ -192,8 +205,8 @@ class CalculoMatrizTempoViagemComponent:
                     self.historico_erro_service.salvar_dataframe(df=df_historico_erro, conexao_bd=conexao_bd)
 
                 parametros = {
-                    "flag": resultado[3],
-                    "codigo_municipio": resultado[0]
+                    "codigo_municipio": resultado[0],
+                    "flag": resultado[3]
                 }
 
                 self.municipio_service.atualizar_flag_calculo_matriz_tempo_viagem(conexao_bd, parametros)
@@ -201,5 +214,6 @@ class CalculoMatrizTempoViagemComponent:
             log.info(msg="Os dados foram persistidos com sucesso.")
 
         except Exception as e:
-            log.error(msg=f"Houve um erro ao persistir o resultado do processamento na base. {ExceptionUtil.montar_erro_exception_padrao(e)}")
+            log.error(msg=f"Houve um erro ao persistir o resultado do processamento na base. "
+                          f"{ExceptionUtil.montar_erro_exception_padrao(e)}")
             raise e
