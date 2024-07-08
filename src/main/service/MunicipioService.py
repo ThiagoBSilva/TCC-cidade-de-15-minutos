@@ -41,6 +41,14 @@ class MunicipioService:
                       f"{ExceptionUtil.montar_erro_exception_padrao(e)}")
             raise e
         
+    def buscar_qtde_registros_pendentes_calculo_indice_15min(self, conexao_bd: Connection) -> DataFrame:
+        try:
+            return self.repository.buscar_qtde_registros_pendentes_calculo_indice_15min(conexao_bd)
+        except Exception as e:
+            log.error(msg="Houve um erro ao buscar a quantidade de municípios pendentes de cálculo do índice de 15 minutos. " 
+                      f"{ExceptionUtil.montar_erro_exception_padrao(e)}")
+            raise e
+        
     def buscar_registros_pendentes_geracao_malha_hexagonal(self, conexao_bd: Connection) -> GeoDataFrame:
         try:
             return self.repository.buscar_registros_pendentes_geracao_malha_hexagonal(conexao_bd)
@@ -60,6 +68,13 @@ class MunicipioService:
             return self.repository.buscar_registros_pendentes_calculo_matriz_tempo_viagem(conexao_bd)
         except Exception as e:
             log.error(msg=f"Houve um erro ao buscar os municípios pendentes de cálculo da matriz de tempos de viagem. {ExceptionUtil.montar_erro_exception_padrao(e)}")
+            raise e
+        
+    def buscar_registros_pendentes_calculo_indice_15min(self, conexao_bd: Connection) -> DataFrame:
+        try:
+            return self.repository.buscar_registros_pendentes_calculo_indice_15min(conexao_bd)
+        except Exception as e:
+            log.error(msg=f"Houve um erro ao buscar os municípios pendentes de cálculo do índice de 15 minutos. {ExceptionUtil.montar_erro_exception_padrao(e)}")
             raise e
         
     def buscar_associacoes_origem_destino_por_codigo(self, conexao_bd: Connection, parametros: dict) -> GeoDataFrame:
@@ -88,5 +103,13 @@ class MunicipioService:
             self.repository.atualizar_flag_calculo_matriz_tempo_viagem(conexao_bd, parametros)
         except Exception as e:
             log.error(msg=f"Houve um erro ao atualizar a flag de cálculo da matriz de tempos de viagem com os parâmetros {parametros}. "
+                      f"{ExceptionUtil.montar_erro_exception_padrao(e)}")
+            raise e
+        
+    def atualizar_flag_calculo_indice_15min(self, conexao_bd: Connection, parametros: dict) -> None:
+        try:
+            self.repository.atualizar_flag_calculo_indice_15min(conexao_bd, parametros)
+        except Exception as e:
+            log.error(msg=f"Houve um erro ao atualizar a flag de cálculo do índice de 15 minutos com os parâmetros {parametros}. "
                       f"{ExceptionUtil.montar_erro_exception_padrao(e)}")
             raise e

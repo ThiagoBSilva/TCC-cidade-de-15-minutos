@@ -26,6 +26,14 @@ class MunicipioQueriesConstantes:
         AND flag_calculo_matriz_tempo_viagem = '{StatusEtapaProcessamentoEnum.PENDENTE.value}';
     '''
 
+    BUSCAR_QTDE_REGISTROS_PENDENTES_CALCULO_INDICE_15MIN = f'''
+        SELECT
+            COUNT(0) AS quantidade
+        FROM t_municipio
+        WHERE flag_calculo_matriz_tempo_viagem = '{StatusEtapaProcessamentoEnum.CONCLUIDO.value}'
+        AND flag_calculo_indice_15min = '{StatusEtapaProcessamentoEnum.PENDENTE.value}';
+    '''
+
     BUSCAR_REGISTROS_PENDENTES_GERACAO_MALHA_HEXAGONAL = f'''
         SELECT
             codigo,
@@ -61,6 +69,17 @@ class MunicipioQueriesConstantes:
         LIMIT {ParametrosConstantes.BATCH_QTDE_REGISTROS_ETAPA_CALCULO_MATRIZ_TEMPO_VIAGEM};
     '''
 
+    BUSCAR_REGISTROS_PENDENTES_CALCULO_INDICE_15MIN = f'''
+        SELECT
+            codigo,
+            nome
+        FROM t_municipio
+        WHERE flag_calculo_matriz_tempo_viagem = '{StatusEtapaProcessamentoEnum.CONCLUIDO.value}'
+        AND flag_calculo_indice_15min = '{StatusEtapaProcessamentoEnum.PENDENTE.value}'
+        ORDER BY codigo
+        LIMIT {ParametrosConstantes.BATCH_QTDE_REGISTROS_ETAPA_CALCULO_INDICE_MUNICIPIO};
+    '''
+
     ATUALIZAR_FLAG_GERACAO_MALHA_HEXAGONAL = '''
         UPDATE t_municipio
         SET flag_geracao_malha_hexagonal = %(flag)s
@@ -76,5 +95,11 @@ class MunicipioQueriesConstantes:
     ATUALIZAR_FLAG_CALCULO_MATRIZ_TEMPO_VIAGEM = '''
         UPDATE t_municipio
         SET flag_calculo_matriz_tempo_viagem = %(flag)s
+        WHERE codigo = %(codigo_municipio)s;
+    '''
+
+    ATUALIZAR_FLAG_CALCULO_INDICE_15MIN = '''
+        UPDATE t_municipio
+        SET flag_calculo_indice_15min = %(flag)s
         WHERE codigo = %(codigo_municipio)s;
     '''

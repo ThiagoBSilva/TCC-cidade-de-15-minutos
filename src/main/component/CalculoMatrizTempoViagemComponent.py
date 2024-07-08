@@ -13,7 +13,6 @@ from util.DataFrameUtil import DataFrameUtil
 from util.ExceptionUtil import ExceptionUtil
 from util.LoggerUtil import LoggerUtil
 from util.OSMNXUtil import OSMNXUtil
-from util.ShapelyUtil import ShapelyUtil
 
 from datetime import datetime
 from geopandas import GeoDataFrame

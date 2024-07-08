@@ -40,6 +40,8 @@ class BancoDadosUtil:
     @staticmethod
     def encerrar_conexao_banco(conexao_bd: Connection) -> None:
         try:
+            log.info(msg="Encerrando a conexão com o banco de dados.")
+            
             conexao_bd.close()
             conexao_bd.engine.dispose()
 

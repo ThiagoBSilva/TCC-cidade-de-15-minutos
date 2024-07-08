@@ -62,10 +62,13 @@ class CargaInicialQueriesConstantes:
             sigla CHAR(2) NOT NULL,
             regiao VARCHAR(15) NOT NULL,
             area_km2 NUMERIC(12, 3) NOT NULL,
-            geometria GEOMETRY(MULTIPOLYGON, 4326) NOT NULL
+            geometria GEOMETRY(MULTIPOLYGON, 4326) NOT NULL,
+            flag_calculo_indice_15min CHAR(1) NOT NULL DEFAULT 'P'
         );
         ALTER TABLE t_unidade_federativa
-            ADD PRIMARY KEY (codigo);
+            ADD PRIMARY KEY (codigo),
+            ADD CONSTRAINT CCKUFE001
+                CHECK (flag_calculo_indice_15min IN ('P', 'C', 'E'));;
 
         CREATE TABLE t_municipio (
             codigo INT NOT NULL,
@@ -75,6 +78,7 @@ class CargaInicialQueriesConstantes:
             flag_geracao_malha_hexagonal CHAR(1) NOT NULL DEFAULT 'P',
             flag_extracao_amenidades CHAR(1) NOT NULL DEFAULT 'P',
             flag_calculo_matriz_tempo_viagem CHAR(1) NOT NULL DEFAULT 'P',
+            flag_calculo_indice_15min CHAR(1) NOT NULL DEFAULT 'P',
             codigo_unidade_federativa INT NOT NULL
         );
         ALTER TABLE t_municipio
@@ -85,7 +89,9 @@ class CargaInicialQueriesConstantes:
             ADD CONSTRAINT CCKMUN02
                 CHECK (flag_extracao_amenidades IN ('P', 'C', 'E')),
             ADD CONSTRAINT CCKMUN03
-                CHECK (flag_calculo_matriz_tempo_viagem IN ('P', 'C', 'E'));
+                CHECK (flag_calculo_matriz_tempo_viagem IN ('P', 'C', 'E')),
+            ADD CONSTRAINT CCKMUN04
+                CHECK (flag_calculo_indice_15min IN ('P', 'C', 'E'));
 
         CREATE TABLE t_malha_hexagonal_municipio (
             codigo INT NOT NULL GENERATED ALWAYS AS IDENTITY,
@@ -124,7 +130,7 @@ class CargaInicialQueriesConstantes:
         CREATE TABLE t_indice_hexagono (
             codigo_hexagono INT NOT NULL,
             codigo_modalidade_transporte SMALLINT NOT NULL,
-            indice NUMERIC(4, 2) NOT NULL
+            indice NUMERIC(5, 2) NOT NULL
         );
         ALTER TABLE t_indice_hexagono
             ADD PRIMARY KEY (codigo_hexagono, codigo_modalidade_transporte),
@@ -134,7 +140,7 @@ class CargaInicialQueriesConstantes:
         CREATE TABLE t_indice_municipio (
             codigo_municipio INT NOT NULL,
             codigo_modalidade_transporte SMALLINT NOT NULL,
-            indice NUMERIC(4, 2) NOT NULL
+            indice NUMERIC(5, 2) NOT NULL
         );
         ALTER TABLE t_indice_municipio
             ADD PRIMARY KEY (codigo_municipio, codigo_modalidade_transporte),
@@ -144,7 +150,7 @@ class CargaInicialQueriesConstantes:
         CREATE TABLE t_indice_unidade_federativa (
             codigo_unidade_federativa SMALLINT NOT NULL,
             codigo_modalidade_transporte SMALLINT NOT NULL,
-            indice NUMERIC(4, 2) NOT NULL
+            indice NUMERIC(5, 2) NOT NULL
         );
         ALTER TABLE t_indice_unidade_federativa
             ADD PRIMARY KEY (codigo_unidade_federativa, codigo_modalidade_transporte),
