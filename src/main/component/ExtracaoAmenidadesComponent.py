@@ -55,7 +55,6 @@ class ExtracaoAmenidadesComponent:
                 gdf_feicao_osmnx = self.osmxn_client_service.obter_feicoes_por_poligono(poligono=municipio[2], tag=tag_osm[1])
 
                 if gdf_feicao_osmnx.empty:
-                    log.warning(msg=f"[{municipio[0]} - {municipio[1]}] Nenhuma amenidade foi encontrada para o município utilizando a tag {tag_osm[1]}.")
                     continue
 
                 for geometria_feicao in gdf_feicao_osmnx["geometry"].to_numpy():

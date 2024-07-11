@@ -88,7 +88,7 @@ class CalculoMatrizTempoViagemComponent:
 
     def __obter_grafo_rede_transporte(self, municipio: list, modalidade_transporte: list) -> MultiDiGraph:
         try:
-            log.info(msg=f"[{municipio[0]} - {municipio[1]}] Obtendo o grafo da rede de transporte do município.")
+            log.info(msg=f"[{municipio[0]} - {municipio[1]}] Obtendo o grafo da rede de transporte do município na modalidade {modalidade_transporte[2]}.")
             
             gph_rede_transporte = self.osmnx_client_service.obter_grafo_por_poligono(
                 poligono=municipio[2], 
@@ -98,8 +98,8 @@ class CalculoMatrizTempoViagemComponent:
             return OSMNXUtil.tratar_grafo_rede_transporte(gph=gph_rede_transporte, velocidade_kph=modalidade_transporte[3])
         
         except Exception as e:
-            log.error(msg=f"[{municipio[0]} - {municipio[1]}] Houve um erro ao obter o grafo tratado da rede de transporte do município. "
-                          f"{ExceptionUtil.montar_erro_exception_padrao(e)}")
+            log.error(msg=f"[{municipio[0]} - {municipio[1]}] Houve um erro ao obter o grafo tratado da rede de transporte do município na modalidade "
+                          f"{modalidade_transporte[2]}. {ExceptionUtil.montar_erro_exception_padrao(e)}")
             raise e
 
 
@@ -110,6 +110,9 @@ class CalculoMatrizTempoViagemComponent:
                 return 0
             
             rota = OSMNXUtil.obter_menor_caminho_entre_nos(gph=gph_rede_transporte, no_origem=origem_destino[1], no_destino=origem_destino[3], cpus=None)
+            if rota is None:
+                raise Exception("Rota não encontrada para a origem e destino informados")
+                
             return OSMNXUtil.calcular_tempo_viagem_rota(gph=gph_rede_transporte, rota=rota)
 
         except Exception as e:

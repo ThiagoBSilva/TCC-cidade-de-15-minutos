@@ -33,7 +33,7 @@ class CalculoMatrizService:
                               f"{ExceptionUtil.montar_erro_exception_padrao(e)}")
                 sleep(2 ** tentativa)
                 
-        raise Exception(f"[{parametros.get('codigo_municipio')}] Não foi possível gravar os dados do grafo do município, após {qtde_retentativas} tentativas.")
+        raise Exception(f"[{parametros.get('codigo_municipio')}] Não foi possível gravar os dados do grafo do município, após {qtde_retentativas} tentativas")
 
     def buscar_associacoes_origem_destino_por_codigo_municipio(self, conexao_bd: Connection, parametros: dict) -> DataFrame:
         try:
