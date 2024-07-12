@@ -35,7 +35,7 @@ class ExtracaoAmenidadesComponent:
         chave = tag[:tag.index("=")]
         valor = tag[tag.index("=") + 1:]
 
-        return {chave: valor}
+        return {chave: True if valor == '*' else valor}
 
 
 
