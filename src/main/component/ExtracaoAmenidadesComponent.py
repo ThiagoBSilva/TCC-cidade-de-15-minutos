@@ -61,7 +61,8 @@ class ExtracaoAmenidadesComponent:
                     lista_dict_amenidade_municipio.append({
                         "geometria": geometria_feicao.centroid, 
                         "codigo_feicao_osm": tag_osm[0], 
-                        "codigo_municipio": municipio[0]
+                        "codigo_municipio": municipio[0],
+                        "codigo_categoria_amenidade": tag_osm[2]
                     })
 
             if not lista_dict_amenidade_municipio:

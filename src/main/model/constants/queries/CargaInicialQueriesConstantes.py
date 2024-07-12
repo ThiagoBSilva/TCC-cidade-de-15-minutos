@@ -228,7 +228,7 @@ class CargaInicialQueriesConstantes:
         (50, 'Local para trabalho', 6);
 
         INSERT INTO t_categoria_amenidade (codigo, nome, codigo_categoria_pai) VALUES
-        (51, 'Aeroporto', 7),
+        (51, 'Acesso a transporte público (geral)', 7);
         (52, 'Aluguel de bicicleta', 7),
         (53, 'Estacionamento para bicicleta', 7),
         (54, 'Estação de bonde', 7),
@@ -345,11 +345,14 @@ class CargaInicialQueriesConstantes:
         ('office=*', 'Escritório', 50);
 
         INSERT INTO t_feicao_osm (tag_osm, descricao, codigo_categoria_amenidade) VALUES
-        ('aeroway=aerodrome', 'Aeroporto', 51),
+        ('public_transport=stop_position', 'Parada de transporte público', 51),
+        ('public_transport=platform', 'Plataforma de transporte público', 51),
+        ('public_transport=station', 'Estação de transporte público', 51),
+        ('public_transport=stop_area', 'Parada de transporte público', 51),
+        ('public_transport=stop_area_group', 'Parada de transporte público', 51);  
         ('amenity=bicycle_rental', 'Aluguel de bicicleta', 52),
         ('amenity=bicycle_parking', 'Estacionamento para bicicleta', 53),
         ('railway=tram_stop', 'Estação de bonde', 54),
-        ('public_transport=station', 'Estação de transporte público (ferroviário)', 55),
         ('railway=platform', 'Plataforma ferroviária', 55),
         ('railway=subway_entrance', 'Entrada de metrô', 55),
         ('amenity=bicycle_repair_station', 'Estação de reparo de bicicletas', 56),
@@ -357,5 +360,5 @@ class CargaInicialQueriesConstantes:
         ('amenity=bus_station', 'Estação de ônibus', 57),
         ('highway=bus_stop', 'Parada de ônibus', 57),
         ('highway=platform', 'Plataforma de ônibus', 57),
-        ('amenity=taxi', 'Parada de táxi', 58);  
+        ('amenity=taxi', 'Parada de táxi', 58);
     '''

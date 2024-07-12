@@ -49,7 +49,7 @@ class CalculoMatrizTempoViagemComponent:
 
 
 
-    def __obter_geodataframe_grafo(self, gph: MultiDiGraph) -> GeoDataFrame:
+    def __obter_geodataframe_no_grafo(self, gph: MultiDiGraph) -> GeoDataFrame:
         gdf_no_grafo = OSMNXUtil.grafo_para_geodataframe(gph)
         gdf_no_grafo["osmid"] = gdf_no_grafo.index
         gdf_no_grafo = DataFrameUtil.renomear_colunas_dataframe(df=gdf_no_grafo, mapeamento=MapeamentosConstantes.COLUNAS_NO_GRAFO)
@@ -68,9 +68,10 @@ class CalculoMatrizTempoViagemComponent:
                 "raio_buffer": self.__calcular_raio_area_analise(velocidade_kph=modalidade_transporte[3]),
             }
 
-            self.calculo_matriz_service.dropar_tabela_temporaria_grafo(conexao_bd, parametros)
-            gdf_grafo = self.__obter_geodataframe_grafo(gph=gph_rede_transporte)
-            self.calculo_matriz_service.salvar_grafo_municipio(gdf=gdf_grafo, conexao_bd=conexao_bd, parametros=parametros)
+            gdf_no_grafo = self.__obter_geodataframe_no_grafo(gph=gph_rede_transporte)
+
+            self.calculo_matriz_service.criar_tabela_no_grafo(conexao_bd)
+            self.calculo_matriz_service.salvar_grafo_municipio(gdf=gdf_no_grafo, conexao_bd=conexao_bd, parametros=parametros)
 
             df_origem_destino = self.calculo_matriz_service.buscar_associacoes_origem_destino_por_codigo_municipio(conexao_bd, parametros)
 

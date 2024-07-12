@@ -12,11 +12,11 @@ class CalculoMatrizService:
 
     repository = CalculoMatrizRepository()
 
-    def dropar_tabela_temporaria_grafo(self, conexao_bd: Connection, parametros: dict) -> None:
+    def criar_tabela_no_grafo(self, conexao_bd: Connection) -> None:
         try:
-            self.repository.dropar_tabela_temporaria_grafo(conexao_bd, parametros)
+            self.repository.criar_tabela_no_grafo(conexao_bd)
         except Exception as e:
-            log.error(msg=f"[{parametros.get('codigo_municipio')}] Houve um erro ao dropar a tabela temporária para o grafo do município. "
+            log.error(msg=f"Houve um erro ao criar a tabela dos nós do grafo do município. "
                           f"{ExceptionUtil.montar_erro_exception_padrao(e)}")
             raise e
 
@@ -24,16 +24,16 @@ class CalculoMatrizService:
         tentativa = 0
         while tentativa < qtde_retentativas:
             try:
-                self.repository.salvar_geodataframe(gdf, conexao_bd, tabela="t_no_grafo_{0}".format(parametros.get("codigo_municipio")), schema="pg_temp")
+                self.repository.salvar_geodataframe(gdf, conexao_bd, tabela="t_no_grafo_municipio", schema="public")
                 return
             
             except Exception as e:
                 tentativa += 1
-                log.error(msg=f"[{parametros.get('codigo_municipio')}] Houve um erro ao salvar o grafo do município. Tentativa {tentativa}. "
+                log.error(msg=f"[{parametros.get('codigo_municipio')}] Houve um erro ao salvar os nós do grafo do município. Tentativa {tentativa}. "
                               f"{ExceptionUtil.montar_erro_exception_padrao(e)}")
                 sleep(2 ** tentativa)
                 
-        raise Exception(f"[{parametros.get('codigo_municipio')}] Não foi possível gravar os dados do grafo do município, após {qtde_retentativas} tentativas")
+        raise Exception(f"[{parametros.get('codigo_municipio')}] Não foi possível gravar os nós do grafo do município, após {qtde_retentativas} tentativas")
 
     def buscar_associacoes_origem_destino_por_codigo_municipio(self, conexao_bd: Connection, parametros: dict) -> DataFrame:
         try:
