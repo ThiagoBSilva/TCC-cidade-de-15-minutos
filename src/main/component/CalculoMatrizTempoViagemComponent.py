@@ -17,7 +17,7 @@ from util.OSMNXUtil import OSMNXUtil
 from datetime import datetime
 from geopandas import GeoDataFrame
 from networkx import MultiDiGraph
-from numpy import NaN, array
+from numpy import array
 from pandas import DataFrame
 from sqlalchemy.engine import Connection
 
@@ -78,6 +78,8 @@ class CalculoMatrizTempoViagemComponent:
             if df_origem_destino.empty:
                 raise Exception(f"[{municipio[0]} - {municipio[1]}] Não foi possível realizar nenhuma associação entre origens e destinos para o município.")
             
+            log.info(msg=f"[{municipio[0]} - {municipio[1]}] {len(df_origem_destino)} associações foram formadas.")
+
             return df_origem_destino
         
         except Exception as e:
@@ -105,21 +107,19 @@ class CalculoMatrizTempoViagemComponent:
 
 
 
-    def __obter_menor_tempo_origem_destino(self, gph_rede_transporte: MultiDiGraph, origem_destino: list) -> float:
-        try:
-            if origem_destino[1] == origem_destino[3]:
-                return 0
-            
-            rota = OSMNXUtil.obter_menor_caminho_entre_nos(gph=gph_rede_transporte, no_origem=origem_destino[1], no_destino=origem_destino[3], cpus=None)
-            if rota is None:
-                raise Exception("Rota não encontrada para a origem e destino informados")
-                
-            return OSMNXUtil.calcular_tempo_viagem_rota(gph=gph_rede_transporte, rota=rota)
+    def __obter_menor_tempo_origem_destino(self, gph_rede_transporte: MultiDiGraph, df_origem_destino: DataFrame) -> array:
+        try:         
+            lista_nos_origem = list(df_origem_destino["no_origem"])
+            lista_nos_destino = list(df_origem_destino["no_destino"])
+
+            lista_rotas = OSMNXUtil.obter_menor_caminho_entre_nos(gph=gph_rede_transporte, nos_origem=lista_nos_origem, nos_destino=lista_nos_destino, cpus=None)
+
+            return array(OSMNXUtil.calcular_tempo_viagem_rota(gph=gph_rede_transporte, rota=rota) for rota in lista_rotas)
 
         except Exception as e:
-            log.error(msg=f"Houve um erro ao obter o menor tempo entre a origem {origem_destino[0]} e destino {origem_destino[2]}. "
+            log.error(msg=f"Houve um erro ao obter o menor tempo entre as origens e destinos. "
                           f"{ExceptionUtil.montar_erro_exception_padrao(e)}")
-            return NaN
+            return e
 
 
 
@@ -127,8 +127,7 @@ class CalculoMatrizTempoViagemComponent:
         try:
             log.info(msg=f"[{municipio[0]} - {municipio[1]}] Calculando os tempos de viagem do município.")
 
-            df_origem_destino["tempo_viagem"] = array(self.__obter_menor_tempo_origem_destino(gph_rede_transporte, origem_destino) 
-                                                      for origem_destino in df_origem_destino.to_numpy())
+            df_origem_destino["tempo_viagem"] = self.__obter_menor_tempo_origem_destino(gph_rede_transporte, df_origem_destino)
             
             return df_origem_destino
         except Exception as e:

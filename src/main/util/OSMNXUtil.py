@@ -5,6 +5,7 @@ from util.YamlUtil import YAMLUtil
 
 from geopandas import GeoDataFrame
 from networkx import MultiDiGraph, set_edge_attributes
+from numpy import NaN
 from osmnx import settings, add_edge_travel_times, shortest_path, graph_to_gdfs
 from osmnx.utils_graph import remove_isolated_nodes, route_to_gdf
 
@@ -42,9 +43,9 @@ class OSMNXUtil:
             raise e
         
     @staticmethod  
-    def obter_menor_caminho_entre_nos(gph: MultiDiGraph, no_origem: int, no_destino: int, peso: str = "travel_time", cpus: int | None = 2) -> None:
+    def obter_menor_caminho_entre_nos(gph: MultiDiGraph, nos_origem: list[int], nos_destino: list[int], peso: str = "travel_time", cpus: int | None = 2) -> list[list]:
         try:
-            return shortest_path(G=gph, orig=no_origem, dest=no_destino, weight=peso, cpus=cpus)
+            return shortest_path(G=gph, orig=nos_origem, dest=nos_destino, weight=peso, cpus=cpus)
         except Exception as e:
             log.error(msg=f"Houve um erro ao obter o menor caminho entre os nós. {ExceptionUtil.montar_erro_exception_padrao(e)}")
             raise e
@@ -52,6 +53,12 @@ class OSMNXUtil:
     @staticmethod  
     def calcular_tempo_viagem_rota(gph: MultiDiGraph, rota: list, peso: str = "travel_time") -> float:
         try:
+            if not rota:
+                return NaN
+            
+            if len(rota) == 1:
+                return 0
+
             gdf_rota = route_to_gdf(G=gph, route=rota, weight=peso)
             return round(gdf_rota["travel_time"].sum(), 2)
         except Exception as e:

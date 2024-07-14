@@ -228,7 +228,7 @@ class CargaInicialQueriesConstantes:
         (50, 'Local para trabalho', 6);
 
         INSERT INTO t_categoria_amenidade (codigo, nome, codigo_categoria_pai) VALUES
-        (51, 'Acesso a transporte público (geral)', 7);
+        (51, 'Acesso a transporte público (geral)', 7),
         (52, 'Aluguel de bicicleta', 7),
         (53, 'Estacionamento para bicicleta', 7),
         (54, 'Estação de bonde', 7),
@@ -349,7 +349,7 @@ class CargaInicialQueriesConstantes:
         ('public_transport=platform', 'Plataforma de transporte público', 51),
         ('public_transport=station', 'Estação de transporte público', 51),
         ('public_transport=stop_area', 'Parada de transporte público', 51),
-        ('public_transport=stop_area_group', 'Parada de transporte público', 51);  
+        ('public_transport=stop_area_group', 'Parada de transporte público', 51), 
         ('amenity=bicycle_rental', 'Aluguel de bicicleta', 52),
         ('amenity=bicycle_parking', 'Estacionamento para bicicleta', 53),
         ('railway=tram_stop', 'Estação de bonde', 54),
