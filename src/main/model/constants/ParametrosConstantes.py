@@ -40,6 +40,11 @@ class ParametrosConstantes:
     RESOLUCAO_MALHA_HEXAGONAL = 8
     MULTIPLICADOR_AREA_ANALISE_HEXAGONO = 1
 
+    # Parâmetros para o cálculo da matriz de tempos de viagem
+    QTDE_CPUS = 6 # Setar para None para todos as disponíveis
+    RAIO_BUSCA_EQUIVALENCIA_ORIGEM = 500 # Metros
+    RAIO_BUSCA_EQUIVALENCIA_DESTINO = 500 # Metros
+
     # Parâmetros para processamento em batch
     BATCH_QTDE_REGISTROS_ETAPA_GERACAO_MALHA = 100
     BATCH_QTDE_PARTICOES_DASK_ETAPA_GERACAO_MALHA = 10

@@ -43,9 +43,9 @@ class OSMNXUtil:
             raise e
         
     @staticmethod  
-    def obter_menor_caminho_entre_nos(gph: MultiDiGraph, nos_origem: list[int], nos_destino: list[int], peso: str = "travel_time", cpus: int | None = 2) -> list[list]:
+    def obter_menor_caminho_entre_nos(gph: MultiDiGraph, nos_origem: list[int], nos_destino: list[int], peso: str = "travel_time") -> list[list]:
         try:
-            return shortest_path(G=gph, orig=nos_origem, dest=nos_destino, weight=peso, cpus=cpus)
+            return shortest_path(G=gph, orig=nos_origem, dest=nos_destino, weight=peso, cpus=ParametrosConstantes.QTDE_CPUS)
         except Exception as e:
             log.error(msg=f"Houve um erro ao obter o menor caminho entre os nós. {ExceptionUtil.montar_erro_exception_padrao(e)}")
             raise e

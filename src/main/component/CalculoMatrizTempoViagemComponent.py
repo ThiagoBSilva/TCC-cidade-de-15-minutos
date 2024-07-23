@@ -66,6 +66,8 @@ class CalculoMatrizTempoViagemComponent:
             parametros = {
                 "codigo_municipio": municipio[0],
                 "raio_buffer": self.__calcular_raio_area_analise(velocidade_kph=modalidade_transporte[3]),
+                "raio_equivalencia_origem": ParametrosConstantes.RAIO_BUSCA_EQUIVALENCIA_ORIGEM,
+                "raio_equivalencia_destino": ParametrosConstantes.RAIO_BUSCA_EQUIVALENCIA_DESTINO
             }
 
             gdf_no_grafo = self.__obter_geodataframe_no_grafo(gph=gph_rede_transporte)
@@ -112,7 +114,7 @@ class CalculoMatrizTempoViagemComponent:
             lista_nos_origem = list(df_origem_destino["no_origem"])
             lista_nos_destino = list(df_origem_destino["no_destino"])
 
-            lista_rotas = OSMNXUtil.obter_menor_caminho_entre_nos(gph=gph_rede_transporte, nos_origem=lista_nos_origem, nos_destino=lista_nos_destino, cpus=None)
+            lista_rotas = OSMNXUtil.obter_menor_caminho_entre_nos(gph=gph_rede_transporte, nos_origem=lista_nos_origem, nos_destino=lista_nos_destino)
 
             return array(OSMNXUtil.calcular_tempo_viagem_rota(gph=gph_rede_transporte, rota=rota) for rota in lista_rotas)
 
