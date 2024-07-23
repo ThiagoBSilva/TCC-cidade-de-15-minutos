@@ -1,5 +1,3 @@
-from model.constants.ParametrosConstantes import ParametrosConstantes
-
 class CalculoMatrizQueriesConstantes:
 
     CRIAR_TABELA_NO_GRAFO = '''
