@@ -42,8 +42,6 @@ class ParametrosConstantes:
 
     # Parâmetros para o cálculo da matriz de tempos de viagem
     QTDE_CPUS = 6 # Setar para None para todos as disponíveis
-    RAIO_BUSCA_EQUIVALENCIA_ORIGEM = 500 # Metros
-    RAIO_BUSCA_EQUIVALENCIA_DESTINO = 500 # Metros
 
     # Parâmetros para processamento em batch
     BATCH_QTDE_REGISTROS_ETAPA_GERACAO_MALHA = 100

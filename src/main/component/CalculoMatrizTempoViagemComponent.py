@@ -56,6 +56,14 @@ class CalculoMatrizTempoViagemComponent:
 
         return gdf_no_grafo.loc[:, ["codigo", "geometria"]]
 
+    
+
+    def __calcular_tempo_viagem_adicional(self, origem_destino: list, velocidade_kph: float) -> float:
+        distancia_origem_metro = origem_destino[2]
+        distancia_destino_metro = origem_destino[5]
+
+        return (distancia_origem_metro + distancia_destino_metro) / (velocidade_kph / 3.6)
+
 
 
     def __montar_associacoes_origem_destino(self, municipio: list, modalidade_transporte: list, 
@@ -66,13 +74,11 @@ class CalculoMatrizTempoViagemComponent:
             parametros = {
                 "codigo_municipio": municipio[0],
                 "raio_buffer": self.__calcular_raio_area_analise(velocidade_kph=modalidade_transporte[3]),
-                "raio_equivalencia_origem": ParametrosConstantes.RAIO_BUSCA_EQUIVALENCIA_ORIGEM,
-                "raio_equivalencia_destino": ParametrosConstantes.RAIO_BUSCA_EQUIVALENCIA_DESTINO
             }
 
             gdf_no_grafo = self.__obter_geodataframe_no_grafo(gph=gph_rede_transporte)
 
-            self.calculo_matriz_service.criar_tabela_no_grafo(conexao_bd)
+            self.calculo_matriz_service.truncar_tabela_no_grafo(conexao_bd)
             self.calculo_matriz_service.salvar_grafo_municipio(gdf=gdf_no_grafo, conexao_bd=conexao_bd, parametros=parametros)
 
             df_origem_destino = self.calculo_matriz_service.buscar_associacoes_origem_destino_por_codigo_municipio(conexao_bd, parametros)
@@ -80,6 +86,11 @@ class CalculoMatrizTempoViagemComponent:
             if df_origem_destino.empty:
                 raise Exception(f"[{municipio[0]} - {municipio[1]}] Não foi possível realizar nenhuma associação entre origens e destinos para o município.")
             
+            df_origem_destino['tempo_viagem_adicional'] = array(
+                self.__calcular_tempo_viagem_adicional(origem_destino, velocidade_kph=modalidade_transporte[3]) 
+                for origem_destino in df_origem_destino.to_numpy()
+            )
+
             log.info(msg=f"[{municipio[0]} - {municipio[1]}] {len(df_origem_destino)} associações foram formadas.")
 
             return df_origem_destino
@@ -113,10 +124,12 @@ class CalculoMatrizTempoViagemComponent:
         try:         
             lista_nos_origem = list(df_origem_destino["no_origem"])
             lista_nos_destino = list(df_origem_destino["no_destino"])
+            lista_tempos_viagem_adicionais = list(df_origem_destino["tempo_viagem_adicional"])
 
             lista_rotas = OSMNXUtil.obter_menor_caminho_entre_nos(gph=gph_rede_transporte, nos_origem=lista_nos_origem, nos_destino=lista_nos_destino)
+            lista_tupla_rotas = list(zip(lista_rotas, lista_tempos_viagem_adicionais))
 
-            return array(OSMNXUtil.calcular_tempo_viagem_rota(gph=gph_rede_transporte, rota=rota) for rota in lista_rotas)
+            return array(OSMNXUtil.calcular_tempo_viagem_rota(gph=gph_rede_transporte, tupla_rota=tupla_rota) for tupla_rota in lista_tupla_rotas)
 
         except Exception as e:
             log.error(msg=f"Houve um erro ao obter o menor tempo entre as origens e destinos. "
@@ -154,9 +167,9 @@ class CalculoMatrizTempoViagemComponent:
                 for origem_destino in df_origem_destino.to_numpy():
                     lista_dict_matriz_tempo_viagem.append({
                         "codigo_hexagono": origem_destino[0], 
-                        "codigo_amenidade": origem_destino[2], 
+                        "codigo_amenidade": origem_destino[3], 
                         "codigo_modalidade_transporte": modalidade_transporte[0], 
-                        "tempo_viagem_seg": origem_destino[4]
+                        "tempo_viagem_seg": origem_destino[7]
                     })
 
             log.info(msg=f"[{municipio[0]} - {municipio[1]}] A matriz de tempos de viagem foi calculada com sucesso para o município.")

@@ -51,16 +51,19 @@ class OSMNXUtil:
             raise e
 
     @staticmethod  
-    def calcular_tempo_viagem_rota(gph: MultiDiGraph, rota: list, peso: str = "travel_time") -> float:
+    def calcular_tempo_viagem_rota(gph: MultiDiGraph, tupla_rota: tuple, peso: str = "travel_time") -> float:
         try:
+            rota = tupla_rota[0]
+            tempo_adicional = tupla_rota[1]
+
             if not rota:
                 return NaN
             
             if len(rota) == 1:
-                return 0
+                return 0 + tempo_adicional
 
             gdf_rota = route_to_gdf(G=gph, route=rota, weight=peso)
-            return round(gdf_rota["travel_time"].sum(), 2)
+            return round(gdf_rota["travel_time"].sum() + tempo_adicional, 2)
         except Exception as e:
             log.error(msg=f"Houve um erro ao calcular o tempo de viagem da rota informada. {ExceptionUtil.montar_erro_exception_padrao(e)}")
             raise e

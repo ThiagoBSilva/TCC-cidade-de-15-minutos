@@ -6,8 +6,8 @@ from sqlalchemy.engine import Connection
 
 class CalculoMatrizRepository:
 
-    def criar_tabela_no_grafo(self, conexao_bd: Connection) -> None:
-        conexao_bd.execute(statement=CalculoMatrizQueriesConstantes.CRIAR_TABELA_NO_GRAFO)
+    def truncar_tabela_no_grafo(self, conexao_bd: Connection) -> None:
+        conexao_bd.execute(statement=CalculoMatrizQueriesConstantes.TRUNCAR_TABELA_NO_GRAFO)
 
     def salvar_geodataframe(self, gdf: GeoDataFrame, conexao_bd: Connection, tabela: str, schema: str) -> None:
         gdf.to_postgis(name=tabela, con=conexao_bd, schema=schema, if_exists="append", index=False)

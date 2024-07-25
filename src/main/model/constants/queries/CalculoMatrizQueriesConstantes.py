@@ -1,15 +1,7 @@
 class CalculoMatrizQueriesConstantes:
 
-    CRIAR_TABELA_NO_GRAFO = '''
-        DROP TABLE IF EXISTS t_no_grafo_municipio;
-
-        CREATE TABLE t_no_grafo_municipio (
-            codigo BIGINT NOT NULL,
-            geometria GEOMETRY(POINT, 4326) NOT NULL
-        );
-
-        CREATE INDEX idx_t_no_grafo_municipio_codigo ON t_no_grafo_municipio(codigo);
-        CREATE INDEX idx_t_no_grafo_municipio_geometria ON t_no_grafo_municipio USING GIST(geometria);
+    TRUNCAR_TABELA_NO_GRAFO = '''
+        TRUNCATE TABLE t_no_grafo_municipio;
     '''
 
     BUSCAR_ASSOCIACOES_ORIGEM_DESTINO_POR_CODIGO = '''
@@ -85,7 +77,7 @@ class CalculoMatrizQueriesConstantes:
             ST_DISTANCE(origem.ponto_origem, no_grafo.geometria) AS distancia
         INTO TEMP TABLE temp_distancia_origem_no_grafo
         FROM temp_origem origem, temp_no_grafo_municipio no_grafo
-        WHERE ST_CONTAINS(ST_BUFFER(origem.ponto_origem, %(raio_equivalencia_origem)s), no_grafo.geometria);
+        WHERE ST_CONTAINS(ST_BUFFER(origem.ponto_origem, %(raio_buffer)s), no_grafo.geometria);
 
         CREATE INDEX idx_temp_distancia_origem_no_grafo_codigo_origem ON pg_temp.temp_distancia_origem_no_grafo(codigo_origem);
         CREATE INDEX idx_temp_distancia_origem_no_grafo_codigo_no_grafo ON pg_temp.temp_distancia_origem_no_grafo(codigo_no_grafo);
@@ -93,7 +85,8 @@ class CalculoMatrizQueriesConstantes:
 
         SELECT
             codigo_origem,
-            codigo_no_grafo
+            codigo_no_grafo,
+            distancia
         INTO TEMP TABLE temp_equivalencia_origem
         FROM temp_distancia_origem_no_grafo
         WHERE (codigo_origem, distancia) IN (
@@ -124,7 +117,7 @@ class CalculoMatrizQueriesConstantes:
             ST_DISTANCE(destino.ponto_destino, no_grafo.geometria) AS distancia
         INTO TEMP TABLE temp_distancia_destino_no_grafo
         FROM temp_destino destino, temp_no_grafo_municipio no_grafo
-        WHERE ST_CONTAINS(ST_BUFFER(destino.ponto_destino, %(raio_equivalencia_destino)s), no_grafo.geometria);
+        WHERE ST_CONTAINS(ST_BUFFER(destino.ponto_destino, %(raio_buffer)s), no_grafo.geometria);
 
         CREATE INDEX idx_temp_distancia_destino_no_grafo_codigo_destino ON pg_temp.temp_distancia_destino_no_grafo(codigo_destino);
         CREATE INDEX idx_temp_distancia_destino_no_grafo_codigo_no_grafo ON pg_temp.temp_distancia_destino_no_grafo(codigo_no_grafo);
@@ -132,7 +125,8 @@ class CalculoMatrizQueriesConstantes:
 
         SELECT
             codigo_destino,
-            codigo_no_grafo
+            codigo_no_grafo,
+            distancia
         INTO TEMP TABLE temp_equivalencia_destino
         FROM temp_distancia_destino_no_grafo
         WHERE (codigo_destino, distancia) IN (
@@ -149,8 +143,10 @@ class CalculoMatrizQueriesConstantes:
         SELECT 
             associacao.codigo_origem,
             equivalencia_origem.codigo_no_grafo AS no_origem,
+            equivalencia_origem.distancia AS distancia_origem,
             associacao.codigo_destino,
-            equivalencia_destino.codigo_no_grafo AS no_destino
+            equivalencia_destino.codigo_no_grafo AS no_destino,
+            equivalencia_destino.distancia AS distancia_destino
         FROM temp_associacao_origem_destino associacao
         INNER JOIN temp_equivalencia_origem equivalencia_origem
             ON associacao.codigo_origem = equivalencia_origem.codigo_origem

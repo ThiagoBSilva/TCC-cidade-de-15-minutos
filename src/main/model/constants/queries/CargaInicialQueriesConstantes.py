@@ -13,6 +13,8 @@ class CargaInicialQueriesConstantes:
         DROP TABLE IF EXISTS t_feicao_osm;
         DROP TABLE IF EXISTS t_categoria_amenidade;
         DROP TABLE IF EXISTS t_historico_erro;
+
+        DROP TABLE IF EXISTS t_no_grafo_municipio;
     '''
 
     CRIAR_TABELAS_BANCO = '''
@@ -130,7 +132,8 @@ class CargaInicialQueriesConstantes:
         CREATE TABLE t_indice_hexagono (
             codigo_hexagono INT NOT NULL,
             codigo_modalidade_transporte SMALLINT NOT NULL,
-            indice NUMERIC(5, 2) NOT NULL
+            indice_p1 NUMERIC(5, 2) NOT NULL,
+            indice_p2 NUMERIC(5, 2) NOT NULL
         );
         ALTER TABLE t_indice_hexagono
             ADD PRIMARY KEY (codigo_hexagono, codigo_modalidade_transporte),
@@ -140,7 +143,8 @@ class CargaInicialQueriesConstantes:
         CREATE TABLE t_indice_municipio (
             codigo_municipio INT NOT NULL,
             codigo_modalidade_transporte SMALLINT NOT NULL,
-            indice NUMERIC(5, 2) NOT NULL
+            indice_p1 NUMERIC(5, 2) NOT NULL,
+            indice_p2 NUMERIC(5, 2) NOT NULL
         );
         ALTER TABLE t_indice_municipio
             ADD PRIMARY KEY (codigo_municipio, codigo_modalidade_transporte),
@@ -150,12 +154,23 @@ class CargaInicialQueriesConstantes:
         CREATE TABLE t_indice_unidade_federativa (
             codigo_unidade_federativa SMALLINT NOT NULL,
             codigo_modalidade_transporte SMALLINT NOT NULL,
-            indice NUMERIC(5, 2) NOT NULL
+            indice_p1 NUMERIC(5, 2) NOT NULL,
+            indice_p2 NUMERIC(5, 2) NOT NULL
         );
         ALTER TABLE t_indice_unidade_federativa
             ADD PRIMARY KEY (codigo_unidade_federativa, codigo_modalidade_transporte),
             ADD FOREIGN KEY (codigo_unidade_federativa) REFERENCES t_unidade_federativa (codigo),
             ADD FOREIGN KEY (codigo_modalidade_transporte) REFERENCES t_modalidade_transporte (codigo);
+
+            
+
+        CREATE TABLE t_no_grafo_municipio (
+            codigo BIGINT NOT NULL,
+            geometria GEOMETRY(POINT, 4326) NOT NULL
+        );
+
+        CREATE INDEX idx_t_no_grafo_municipio_codigo ON t_no_grafo_municipio(codigo);
+        CREATE INDEX idx_t_no_grafo_municipio_geometria ON t_no_grafo_municipio USING GIST(geometria);
     '''
 
     POPULAR_TABELAS_INICIAIS = '''
@@ -228,14 +243,13 @@ class CargaInicialQueriesConstantes:
         (50, 'Local para trabalho', 6);
 
         INSERT INTO t_categoria_amenidade (codigo, nome, codigo_categoria_pai) VALUES
-        (51, 'Acesso a transporte público (geral)', 7),
-        (52, 'Aluguel de bicicleta', 7),
-        (53, 'Estacionamento para bicicleta', 7),
-        (54, 'Estação de bonde', 7),
-        (55, 'Estação de metrô', 7),
-        (56, 'Manutenção de bicicleta', 7),
-        (57, 'Parada de ônibus', 7),
-        (58, 'Parada de taxi', 7);
+        (51, 'Aluguel de bicicleta', 7),
+        (52, 'Estacionamento para bicicleta', 7),
+        (53, 'Estação de bonde', 7),
+        (54, 'Estação de metrô', 7),
+        (55, 'Manutenção de bicicleta', 7),
+        (56, 'Parada de ônibus', 7),
+        (57, 'Parada de taxi', 7);
 
         INSERT INTO t_feicao_osm (tag_osm, descricao, codigo_categoria_amenidade) VALUES
         ('amenity=bar', 'Bar', 8),
@@ -345,20 +359,15 @@ class CargaInicialQueriesConstantes:
         ('office=*', 'Escritório', 50);
 
         INSERT INTO t_feicao_osm (tag_osm, descricao, codigo_categoria_amenidade) VALUES
-        ('public_transport=stop_position', 'Parada de transporte público', 51),
-        ('public_transport=platform', 'Plataforma de transporte público', 51),
-        ('public_transport=station', 'Estação de transporte público', 51),
-        ('public_transport=stop_area', 'Parada de transporte público', 51),
-        ('public_transport=stop_area_group', 'Parada de transporte público', 51), 
-        ('amenity=bicycle_rental', 'Aluguel de bicicleta', 52),
-        ('amenity=bicycle_parking', 'Estacionamento para bicicleta', 53),
-        ('railway=tram_stop', 'Estação de bonde', 54),
-        ('railway=platform', 'Plataforma ferroviária', 55),
-        ('railway=subway_entrance', 'Entrada de metrô', 55),
-        ('amenity=bicycle_repair_station', 'Estação de reparo de bicicletas', 56),
-        ('amenity=bicycle_wash', 'Lavagem de bicicletas', 56),
-        ('amenity=bus_station', 'Estação de ônibus', 57),
-        ('highway=bus_stop', 'Parada de ônibus', 57),
-        ('highway=platform', 'Plataforma de ônibus', 57),
-        ('amenity=taxi', 'Parada de táxi', 58);
+        ('amenity=bicycle_rental', 'Aluguel de bicicleta', 51),
+        ('amenity=bicycle_parking', 'Estacionamento para bicicleta', 52),
+        ('railway=tram_stop', 'Estação de bonde', 53),
+        ('railway=platform', 'Plataforma ferroviária', 54),
+        ('railway=subway_entrance', 'Entrada de metrô', 54),
+        ('amenity=bicycle_repair_station', 'Estação de reparo de bicicletas', 55),
+        ('amenity=bicycle_wash', 'Lavagem de bicicletas', 55),
+        ('amenity=bus_station', 'Estação de ônibus', 56),
+        ('highway=bus_stop', 'Parada de ônibus', 56),
+        ('highway=platform', 'Plataforma de ônibus', 56),
+        ('amenity=taxi', 'Parada de táxi', 57);
     '''

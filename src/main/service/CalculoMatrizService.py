@@ -12,9 +12,9 @@ class CalculoMatrizService:
 
     repository = CalculoMatrizRepository()
 
-    def criar_tabela_no_grafo(self, conexao_bd: Connection) -> None:
+    def truncar_tabela_no_grafo(self, conexao_bd: Connection) -> None:
         try:
-            self.repository.criar_tabela_no_grafo(conexao_bd)
+            self.repository.truncar_tabela_no_grafo(conexao_bd)
         except Exception as e:
             log.error(msg=f"Houve um erro ao criar a tabela dos nós do grafo do município. "
                           f"{ExceptionUtil.montar_erro_exception_padrao(e)}")
