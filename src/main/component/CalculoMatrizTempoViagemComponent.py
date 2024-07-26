@@ -82,9 +82,6 @@ class CalculoMatrizTempoViagemComponent:
             self.calculo_matriz_service.salvar_grafo_municipio(gdf=gdf_no_grafo, conexao_bd=conexao_bd, parametros=parametros)
 
             df_origem_destino = self.calculo_matriz_service.buscar_associacoes_origem_destino_por_codigo_municipio(conexao_bd, parametros)
-
-            if df_origem_destino.empty:
-                raise Exception(f"[{municipio[0]} - {municipio[1]}] Não foi possível realizar nenhuma associação entre origens e destinos para o município.")
             
             df_origem_destino['tempo_viagem_adicional'] = array(
                 self.__calcular_tempo_viagem_adicional(origem_destino, velocidade_kph=modalidade_transporte[3]) 
@@ -155,6 +152,7 @@ class CalculoMatrizTempoViagemComponent:
     def __calcular_matriz_tempo_viagem(self, municipio: list, df_modalidade_transporte: DataFrame, conexao_bd: Connection) -> tuple[list[dict], list[dict]]:
         lista_dict_matriz_tempo_viagem = list()
         lista_dict_historico_erro = list()
+        lista_modalidade_erro = list()
 
         try:
             log.info(msg=f"[{municipio[0]} - {municipio[1]}] Calculando a matriz de tempos de viagem para o município.")
@@ -162,6 +160,11 @@ class CalculoMatrizTempoViagemComponent:
             for modalidade_transporte in df_modalidade_transporte.to_numpy():
                 gph_rede_transporte = self.__obter_grafo_rede_transporte(municipio, modalidade_transporte)
                 df_origem_destino = self.__montar_associacoes_origem_destino(municipio, modalidade_transporte, gph_rede_transporte, conexao_bd)
+
+                if df_origem_destino.empty:
+                    lista_modalidade_erro.append(modalidade_transporte)
+                    continue
+                    
                 df_origem_destino = self.__calcular_tempos_viagem(municipio, gph_rede_transporte, df_origem_destino)
 
                 for origem_destino in df_origem_destino.to_numpy():
@@ -171,6 +174,9 @@ class CalculoMatrizTempoViagemComponent:
                         "codigo_modalidade_transporte": modalidade_transporte[0], 
                         "tempo_viagem_seg": origem_destino[7]
                     })
+
+            if len(lista_modalidade_erro) == len(df_modalidade_transporte):
+                raise Exception(f"[{municipio[0]} - {municipio[1]}] Não foi possível realizar nenhuma associação entre origens e destinos para o município")
 
             log.info(msg=f"[{municipio[0]} - {municipio[1]}] A matriz de tempos de viagem foi calculada com sucesso para o município.")
 

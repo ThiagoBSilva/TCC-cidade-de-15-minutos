@@ -175,7 +175,7 @@ class CargaInicialQueriesConstantes:
 
     POPULAR_TABELAS_INICIAIS = '''
         INSERT INTO t_modalidade_transporte (nome, descricao, velocidade_media_kph) VALUES
-        ('walk', 'Caminhada', 4.0),
+        ('walk', 'Caminhada', 3.6),
         ('bike', 'Bicicleta', 13.0);
 
         INSERT INTO t_categoria_amenidade (codigo, nome) VALUES
