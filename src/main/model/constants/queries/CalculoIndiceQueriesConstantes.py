@@ -14,10 +14,12 @@ class CalculoIndiceQueriesConstantes:
         WHERE codigo_categoria_pai IS NULL;
 
         SELECT
-            COUNT(0) AS contagem
+            COUNT(DISTINCT feicao.codigo_categoria_amenidade) AS contagem
         INTO TEMP TABLE temp_contagem_amenidades_15min
-        FROM t_categoria_amenidade 
-        WHERE codigo_categoria_pai IS NOT NULL;
+        FROM t_amenidade_municipio amenidade
+        INNER JOIN t_feicao_osm feicao
+            ON amenidade.codigo_feicao_osm = feicao.codigo
+        WHERE amenidade.codigo_municipio = %(codigo_municipio)s;
 
         SELECT
             matriz.codigo_hexagono,
