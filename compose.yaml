@@ -1,0 +1,24 @@
+version: "3.8"
+
+services:
+    overpass:
+        container_name: overpass-api
+        image: wiktorn/overpass-api:latest
+        ports:
+          - "8080:80"
+        environment:
+          - OVERPASS_META=yes
+          - OVERPASS_MODE=init
+          - OVERPASS_PLANET_URL=http://download.geofabrik.de/south-america/brazil-latest.osm.bz2
+          - OVERPASS_DIFF_URL=http://download.openstreetmap.fr/replication/south-america/brazil/minute/
+          - OVERPASS_UPDATE_SLEEP=3600
+          - OVERPASS_ALLOW_DUPLICATE_QUERIES=yes
+        volumes:
+          - overpass-db:/db
+        healthcheck:
+          test: ["CMD-SHELL", "curl --noproxy '*' -qf -g 'http://localhost/api/interpreter?data=[out:json];node(1);out;' | jq '.generator' | grep -q Overpass || exit 1"]
+          start_period: 48h
+
+volumes:
+    overpass-db:
+  

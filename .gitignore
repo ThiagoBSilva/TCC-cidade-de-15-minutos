@@ -1,6 +1,7 @@
 # Directories
-src/cache
-old/
+data/
+logs/
+cache/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
