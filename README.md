@@ -148,7 +148,7 @@ Para a execução do projeto é necessário a instalação do Python em sua vers
 * **DBeaver**: é um gerenciador universal de banco de dados. O uso dele é recomendado pelo fato de ser muito versátil, contém inúmeras ferramentas para auxiliar na visualização dos dados e aprimora bastante a qualidade de vida em comparação ao pgAdmin 4. Além disso, para dados geográficos, o DBeaver conta com uma ferramenta nativa para a visualização dos dados.
 
 * **API Overpass via Docker**: é uma instância local da API Overpass que pode ser utilizada no lugar do serviço hospedado na Internet. O uso da instância local acelera consideravelmente a rapidez na consulta das informações, uma vez que o trâmite para estabelecimento de conexão em rede remota e problemas de rede não existem. Além disso o serviço API Overpass pode bloquear o acesso em decorrência do volume elevado de chamadas.
-  - A imagem utilizada foi criada pelo usuário [wiktorn](https://github.com/wiktorn) e pode ser acessada aqui [Overpass-API](https://github.com/wiktorn/Overpass-API/tree/master)
+  - A imagem utilizada foi criada pelo usuário [wiktorn](https://github.com/wiktorn) e pode ser acessada aqui: [Overpass-API](https://github.com/wiktorn/Overpass-API/tree/master).
   - O projeto conta com um arquivo compose.yaml configurado, que pode ser utilizado para a criação e execução do container da instância local.
   - O processo para download e inicialização pode demorar um pouco. Para a execução realizada pelos desenvolvedores o processo demorou pouco mais de 4 horas.
 
