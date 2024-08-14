@@ -4,7 +4,7 @@ application:
 overpass-api:
     local:
         url: http://localhost:8080/api
-        enabled: True
+        enabled: False
 
 database:
     dev:
